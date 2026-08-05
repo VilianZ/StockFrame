@@ -1,0 +1,50 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Next.js and package output
+.next/
+out/
+build/
+dist/
+node_modules/
+.vercel/
+.turbo/
+*.tsbuildinfo
+
+# Tests and coverage
+coverage/
+*.lcov
+
+# Package-manager and runtime logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local Python artifacts and tooling caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local codebase tooling data
+.codebase-memory/
+
+# Local IDE and OS files
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*~
