@@ -1,0 +1,34 @@
+{
+  "metadata": { "security_type_filter": ["Equity"], "total_records": 3 },
+  "data": [
+    {
+      "security_type": "Equity",
+      "ticker": "AAPL",
+      "cik": 320193,
+      "name": "Apple Inc.",
+      "name_short": "Apple",
+      "sector": "Technology",
+      "industry": "Consumer Electronics",
+      "exchange": "NASDAQ"
+    },
+    {
+      "security_type": "Equity",
+      "ticker": "MSFT",
+      "cik": 789019,
+      "name": "Microsoft Corporation",
+      "name_short": "Microsoft",
+      "sector": "Technology",
+      "industry": "Software",
+      "exchange": "NASDAQ"
+    },
+    {
+      "security_type": "Equity",
+      "ticker": "MISSINGX",
+      "name": "Incomplete Listing",
+      "name_short": "Incomplete Listing",
+      "sector": "Technology",
+      "industry": "Software",
+      "exchange": ""
+    }
+  ]
+}

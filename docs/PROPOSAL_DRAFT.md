@@ -65,9 +65,9 @@ EquiScope AI tidak melakukan transaksi saham dan tidak memberikan nasihat finans
 
 Pengguna memulai analisis dengan mencari nama perusahaan atau ticker saham. Sistem akan menampilkan kandidat yang sesuai agar tidak memilih perusahaan secara ambigu. Setelah perusahaan dipilih, pengguna menuliskan fokus analisis, misalnya valuasi, kemampuan menghasilkan laba, kondisi utang, atau prospek pertumbuhan.
 
-Route Handler Next.js mengambil data pasar dan laporan keuangan melalui Alpha Vantage. Data kemudian dinormalisasi dan digunakan untuk menghitung metrik finansial menggunakan TypeScript. Setiap metrik memiliki formula, status, sumber data, dan peringatan apabila perhitungan tidak dapat dilakukan.
+Route Handler Next.js mengambil data pasar dan laporan keuangan melalui Business Quant. Data kemudian dinormalisasi dan digunakan untuk menghitung metrik finansial menggunakan TypeScript. Setiap metrik memiliki formula, status, sumber data, dan peringatan apabila perhitungan tidak dapat dilakukan.
 
-Setelah melewati pemeriksaan kualitas data, sistem mengirimkan paket data terstruktur kepada satu model AI melalui OpenRouter. Satu permintaan AI menghasilkan laporan akhir secara langsung. Perspektif konservatif, moderat, dan agresif merupakan tiga bagian dari laporan yang sama, bukan tiga agen atau tiga permintaan AI terpisah.
+Setelah melewati pemeriksaan kualitas data, sistem mengirimkan paket data terstruktur kepada satu model Gemini melalui Gemini API direct. Satu permintaan AI menghasilkan laporan akhir secara langsung. Perspektif konservatif, moderat, dan agresif merupakan tiga bagian dari laporan yang sama, bukan tiga agen atau tiga permintaan AI terpisah.
 
 Laporan akhir menampilkan ringkasan, analisis fundamental, valuasi, kekuatan perusahaan, risiko, keterbatasan data, tingkat keyakinan, serta rekomendasi untuk tiga profil risiko.
 
@@ -137,7 +137,7 @@ Keunggulan EquiScope AI meliputi:
 2. Pengguna mencari nama perusahaan atau ticker.
 3. Sistem menampilkan hasil pencarian yang didukung.
 4. Pengguna memilih perusahaan dan menuliskan fokus analisis.
-5. Route Handler mengambil market snapshot dari Alpha Vantage.
+5. Route Handler mengambil market snapshot dari Business Quant.
 6. TypeScript menormalisasi data, menghitung metrik, dan memeriksa kualitas data.
 7. Satu model AI menghasilkan laporan berdasarkan data yang telah diverifikasi.
 8. Server memvalidasi struktur laporan dan evidence ID.
@@ -162,15 +162,15 @@ flowchart TD
 flowchart TD
     B[Browser] --> A[Next.js di Vercel]
     A --> R[Route Handler /api/analyze]
-    R --> AV[Alpha Vantage]
+    R --> BQ[Business Quant]
     R --> ME[TypeScript Metrics Engine]
     ME --> DQ[Data Quality Gate]
-    DQ --> OR[Satu Model via OpenRouter]
+    DQ --> OR[Satu Model via Gemini API]
     OR --> FR[Structured AI Report]
     FR --> B
 ```
 
-Frontend dan fungsi server-side berada dalam satu project Next.js. Route Handler menjadi pintu aman untuk mengakses Alpha Vantage dan OpenRouter tanpa mengirim API key ke browser. Perhitungan metrik dilakukan dengan TypeScript, sedangkan satu model AI menyusun interpretasi akhir. Seluruh aplikasi di-hosting pada Vercel tanpa server Python terpisah.
+Frontend dan fungsi server-side berada dalam satu project Next.js. Route Handler menjadi pintu aman untuk mengakses Business Quant dan Gemini tanpa mengirim API key ke browser. Perhitungan metrik dilakukan dengan TypeScript, sedangkan satu model AI menyusun interpretasi akhir. Seluruh aplikasi di-hosting pada Vercel tanpa server Python terpisah.
 
 ## 3.4 Perancangan Antarmuka
 
@@ -215,8 +215,8 @@ Screenshot atau mockup yang disarankan:
 | Styling | Tailwind CSS atau CSS framework terpilih | Design system dan responsive layout |
 | Server-side API | Next.js Route Handlers | Menjaga API key, mengatur workflow, dan memvalidasi respons |
 | Financial Engine | TypeScript | Normalisasi data dan perhitungan metrik deterministik |
-| Market Data | Alpha Vantage | Data harga dan laporan keuangan |
-| AI/LLM | OpenRouter | Gateway menuju satu model AI |
+| Market Data | Business Quant | Data harga dan laporan keuangan |
+| AI/LLM | Gemini API direct | API menuju satu model Gemini GA |
 | Deployment | Vercel | Hosting frontend dan server-side Functions |
 | Version Control | Git dan GitHub | Kolaborasi dan penyimpanan source code |
 | Testing | Vitest dan test tooling Next.js | Unit, contract, integration, dan Route Handler test |
@@ -245,8 +245,8 @@ Pengembangan berikutnya dapat mencakup:
 
 # DAFTAR PUSTAKA AWAL
 
-1. Alpha Vantage. *API Documentation*. https://www.alphavantage.co/documentation/
-2. OpenRouter. *Documentation*. https://openrouter.ai/docs/
+1. Business Quant. *API Documentation*. https://businessquant.com/docs/api/
+2. Google. *Gemini API Documentation*. https://ai.google.dev/gemini-api/docs
 3. Next.js. *Next.js Documentation*. https://nextjs.org/docs
 4. Vercel. *Vercel Documentation*. https://vercel.com/docs
 5. Tambahkan referensi akademik atau buku untuk formula ROA, ROE, ROIC, DER, dan rasio finansial lainnya.

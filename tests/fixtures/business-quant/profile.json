@@ -1,0 +1,12 @@
+{
+  "cik": 320193,
+  "ticker": "AAPL",
+  "name": "Apple Inc.",
+  "name_short": "Apple",
+  "security_type": "Equity",
+  "asset_class": "Equity",
+  "sector": "Technology",
+  "industry": "Consumer Electronics",
+  "exchange": "NASDAQ",
+  "profile": "Apple designs, manufactures, and markets consumer electronics and related services."
+}

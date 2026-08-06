@@ -1,0 +1,17 @@
+{
+  "metadata": { "ticker": "AAPL", "currency": "USD", "template": "general", "statement": "Cash Flow", "frequency": "Quarter", "period": "all" },
+  "data": { "Cash Flow": { "sections": {
+    "Operations": { "metadata": { "slug": "cash-from-operations" }, "values": [
+      { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 30 } },
+      { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 29 } },
+      { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 28 } },
+      { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 27 } }
+    ] },
+    "Capex": { "metadata": { "slug": "capital-expenditures" }, "values": [
+      { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 5 } },
+      { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 5 } },
+      { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 4 } },
+      { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 4 } }
+    ] }
+  } } }
+}

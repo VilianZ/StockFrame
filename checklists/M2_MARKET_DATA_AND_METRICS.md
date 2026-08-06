@@ -13,3 +13,9 @@
 - [x] Lulus lint, strict type-check, unit test, dan production build tanpa AI/provider live call.
 - [x] Menutup regression P1/P2: PBV tanpa harga, mismatch mata uang, coverage quality gate, evidence ROA/ROE, TTM continuity, dan historical prices.
 - [x] Menetapkan ROIC v2 sebagai NOPAT dibagi rata-rata operating invested capital (`total assets - total current liabilities`).
+- [x] Migrasi market-data adapter ke Business Quant dengan parser nested statement yang hanya memakai `reportedValue.raw`.
+- [x] Menambahkan validasi template `general`, batas 12 kuartal, kontinuitas minimal empat kuartal, dan fixture statement IS/BS/CF.
+- [x] Menambahkan parsing EOD OHLCV, deduplikasi tanggal aman, validasi invariant, bounded cache, TTL universe 24 jam, dan batas lima call per ticker uncached.
+- [x] Menghapus runtime adapter, parser, test, dan fixture Alpha Vantage setelah test Business Quant lulus.
+- [x] Melewati row universe equity yang tidak memiliki ticker, nama, atau exchange tanpa membuang kandidat valid; no-candidate tetap ditolak.
+- [x] Menangani duplicate EOD dengan OHLC identik atau konflik close terbatas melalui volume terbesar, sambil menolak konflik open/high/low.

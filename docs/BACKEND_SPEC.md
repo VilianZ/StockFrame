@@ -12,10 +12,10 @@ The application turns market and company data into a structured AI-assisted equi
 The initial workflow is:
 
 1. The user submits a company or ticker and an optional research focus.
-2. The server resolves the supported instrument and fetches market data from Alpha Vantage.
+2. The server resolves the supported instrument and fetches market data from Business Quant.
 3. TypeScript normalizes the provider response and calculates financial metrics.
 4. The server applies deterministic data-quality checks.
-5. One OpenRouter model receives a bounded evidence packet in one request.
+5. One Gemini model receives a bounded evidence packet in one request.
 6. The model returns one structured report containing conservative, moderate, and aggressive perspectives.
 7. The server validates the response and returns it directly to the browser.
 
@@ -29,8 +29,8 @@ The product provides educational research. It does not execute trades, manage fu
 | Language | TypeScript |
 | Frontend | React inside the same Next.js project |
 | Server boundary | Next.js Route Handlers running as Vercel Functions |
-| Market data | Alpha Vantage |
-| AI gateway | OpenRouter |
+| Market data | Business Quant |
+| AI gateway | Gemini API direct |
 | AI execution | One explicit model and one model call per successful analysis |
 | Financial calculations | Pure TypeScript functions |
 | Hosting | One Vercel project |
@@ -49,11 +49,11 @@ The initial version does not require Python, FastAPI, Uvicorn, Azure, Docker, a 
 flowchart LR
     U[Browser] -->|POST /api/analyze| R[Next.js Route Handler]
     R --> V[Input validation]
-    V --> AV[Alpha Vantage]
-    AV --> N[Normalize market data]
+    V --> BQ[Business Quant]
+    BQ --> N[Normalize market data]
     N --> M[TypeScript metric engine]
     M --> Q[Data-quality gate]
-    Q --> O[One OpenRouter model call]
+    Q --> O[One Gemini model call]
     O --> X[Output validation]
     X --> U
 ```
@@ -64,7 +64,7 @@ All stages execute within one server request. No analysis job is created and the
 
 Included:
 
-- US-listed common stocks supported by Alpha Vantage.
+- US-listed common stocks supported by Business Quant.
 - Company-name or ticker input with explicit ambiguity handling.
 - Latest available market and financial data.
 - Indonesian report output by default.
@@ -102,6 +102,7 @@ Rules:
 - `query` is trimmed and limited to 1-100 characters.
 - `focus` is optional, trimmed, and limited to 500 characters.
 - Empty input, unsupported symbols, and ambiguous company matches return typed client errors.
+- Ambiguous matches return the complete bounded candidate list so the user can select the intended instrument.
 - The request body has a strict size limit.
 
 ### 5.2 Successful response
@@ -143,6 +144,8 @@ Rules:
 
 Internal provider messages, stack traces, prompts, and credentials must never be returned.
 
+`AMBIGUOUS_INSTRUMENT` responses include `error.candidates`. Local repeat-request throttling uses `REQUEST_RATE_LIMITED`; provider quota exhaustion remains `PROVIDER_RATE_LIMITED`. An application-wide deadline uses `ANALYSIS_TIMEOUT`.
+
 ## 6. Domain contracts
 
 Domain contracts are plain TypeScript types and schemas independent of React components and provider SDKs.
@@ -183,7 +186,7 @@ Resolution behavior:
 
 1. Normalize user input without altering a plausible ticker.
 2. If it matches the supported ticker format, verify it against provider data.
-3. Otherwise use Alpha Vantage symbol search.
+3. Otherwise use the cached Business Quant equity universe.
 4. Filter unsupported regions and instrument types.
 5. Continue only for one strong match.
 6. Return explicit candidates when the input remains ambiguous.
@@ -194,23 +197,25 @@ The server must never silently select a company when multiple plausible matches 
 
 The minimum useful snapshot may consume:
 
-- symbol search when needed;
-- latest quote or compact daily prices;
-- company overview;
-- income statement;
-- balance sheet;
-- cash-flow statement.
+- Business Quant equity universe for resolution, cached for 24 hours;
+- Business Quant stock profile for identity and company metadata;
+- quarterly IS, BS, and CF requests in parallel;
+- strictly historical EOD OHLCV prices.
 
 Provider rules:
 
 - API keys are read only from server-side environment variables.
-- Provider URLs and function names are fixed by the adapter.
+- Business Quant origin and endpoint paths are fixed by the adapter; the API key is sent only as a query parameter.
+- One uncached ticker uses at most five provider calls: profile, IS, BS, CF, and EOD prices. The universe cache is excluded from this limit.
+- Only the `general` financial-statement template is supported; other templates produce a typed safe failure.
+- Statement values use only `reportedValue.raw`; provider payloads are parsed into normalized records before metrics or Gemini.
+- EOD records require finite positive OHLC values, valid dates, and valid OHLC invariants. Identical-date duplicates are collapsed with the largest volume; conflicting OHLC duplicates fail.
 - Every call has an abort timeout.
 - Retry at most once for a transient network or server failure.
 - Do not immediately retry a provider rate-limit response.
 - Distinguish invalid key, quota exceeded, symbol not found, timeout, malformed payload, and upstream failure.
 - Never log complete request URLs when they contain provider credentials.
-- Never send complete raw provider payloads to OpenRouter.
+- Never send complete raw provider payloads to Gemini.
 - Provider quota assumptions are configurable and are not hard-coded to a specific commercial plan.
 
 The initial implementation may reuse a completed result in the current browser session. Durable cross-user caching is deferred until persistence is actually needed.
@@ -270,7 +275,7 @@ The server derives a deterministic quality assessment from source completeness, 
 
 | Result | Behavior |
 |---|---|
-| Insufficient | Stop before OpenRouter and return `INSUFFICIENT_DATA` |
+| Insufficient | Stop before Gemini and return `INSUFFICIENT_DATA` |
 | Degraded | Continue, disclose limitations, and cap confidence |
 | Sufficient | Continue with the full output contract |
 
@@ -278,7 +283,7 @@ The model may explain quality flags but cannot remove or override them.
 
 ## 12. Single-model AI analysis
 
-One explicit OpenRouter model ID is configured server-side. A successful analysis makes exactly one model request.
+One explicit Gemini GA model ID is configured server-side. A successful analysis makes exactly one model request.
 
 The evidence packet contains only:
 
@@ -327,7 +332,7 @@ Malformed or schema-invalid model output fails the request with a safe typed err
 5. market-data retrieval;
 6. normalization and metric calculation;
 7. data-quality assessment;
-8. one OpenRouter analysis request;
+8. one Gemini analysis request;
 9. final-report validation;
 10. safe response serialization.
 
@@ -337,7 +342,7 @@ The handler uses the Node.js runtime, not the Edge runtime, unless all dependenc
 
 Required controls:
 
-- `ALPHA_VANTAGE_API_KEY` and `OPENROUTER_API_KEY` are server-only variables and never use the `NEXT_PUBLIC_` prefix;
+- `BUSINESS_QUANT_API_KEY` and `GEMINI_API_KEY` are server-only variables and never use the `NEXT_PUBLIC_` prefix;
 - no provider or AI call is made directly from a Client Component;
 - fixed provider origins and methods;
 - strict input and output schemas;
@@ -355,9 +360,9 @@ Client-side throttling is not a security control. The first version may use ligh
 Required server-side environment variables:
 
 ```text
-ALPHA_VANTAGE_API_KEY
-OPENROUTER_API_KEY
-OPENROUTER_MODEL_ID
+BUSINESS_QUANT_API_KEY
+GEMINI_API_KEY
+GEMINI_MODEL_ID
 ```
 
 Optional configuration:
@@ -365,8 +370,8 @@ Optional configuration:
 ```text
 ANALYSIS_OUTPUT_LANGUAGE=id
 MARKET_DATA_TIMEOUT_MS
-OPENROUTER_TIMEOUT_MS
-OPENROUTER_MAX_TOKENS
+GEMINI_TIMEOUT_MS
+GEMINI_MAX_OUTPUT_TOKENS
 ANALYZE_MAX_DURATION_SECONDS
 ```
 
@@ -394,7 +399,7 @@ tests/
 checklists/
 ```
 
-Server-only modules must not be imported by Client Components. Provider adapters, secrets, and OpenRouter code remain below `lib/server` or explicitly use `server-only` boundaries.
+Server-only modules must not be imported by Client Components. Provider adapters, secrets, and Gemini code remain below `lib/server` or explicitly use `server-only` boundaries.
 
 ## 17. Testing strategy
 
@@ -413,7 +418,7 @@ Required automated coverage:
 - secret-redaction checks;
 - proof that normal success uses one model request.
 
-Default tests use fixtures and fake model responses. Live Alpha Vantage and OpenRouter checks are opt-in and never run in normal CI.
+Default tests use fixtures and fake model responses. Live Business Quant and Gemini checks are opt-in and never run in normal CI.
 
 ## 18. Deployment
 
@@ -427,7 +432,7 @@ The complete application deploys as one Vercel project. The deployment must veri
 - one controlled live analysis succeeds when provider quota is available;
 - no key appears in browser source, response bodies, or logs.
 
-Vercel Hobby can support personal demonstration within its current usage limits. Alpha Vantage and OpenRouter retain their own independent quotas and costs.
+Vercel Hobby can support personal demonstration within its current usage limits. Business Quant and Gemini retain their own independent quotas and costs.
 
 ## 19. Definition of done
 

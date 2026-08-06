@@ -1,0 +1,41 @@
+{
+  "metadata": { "ticker": "AAPL", "currency": "USD", "template": "general", "statement": "Balance Sheet", "frequency": "Quarter", "period": "all" },
+  "data": {
+    "Assets": { "sections": {
+      "Assets": { "metadata": { "slug": "assets" }, "values": [
+        { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 1000 } },
+        { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 990 } },
+        { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 980 } },
+        { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 970 } }
+      ] },
+      "Current Assets": { "metadata": { "slug": "current-assets" }, "values": [
+        { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 300 } },
+        { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 295 } },
+        { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 290 } },
+        { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 285 } }
+      ] }
+    } },
+    "Liabilities": { "sections": {
+      "Liabilities": { "metadata": { "slug": "total-liabilities" }, "values": [
+        { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 400 } },
+        { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 395 } },
+        { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 390 } },
+        { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 385 } }
+      ] },
+      "Current Liabilities": { "metadata": { "slug": "total-current-liabilities" }, "values": [
+        { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 150 } },
+        { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 145 } },
+        { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 140 } },
+        { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 135 } }
+      ] }
+    } },
+    "Equity": { "sections": {
+      "Common Equity": { "metadata": { "slug": "common-equity" }, "values": [
+        { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 600 } },
+        { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 595 } },
+        { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 590 } },
+        { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 585 } }
+      ] }
+    } }
+  }
+}

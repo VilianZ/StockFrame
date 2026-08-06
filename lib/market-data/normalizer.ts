@@ -136,7 +136,7 @@ async function normalizeStatement(
       const values = valuesFromRow(row, fields);
       const evidenceId = await sha256Hex({
         symbol,
-        source: `alpha-vantage.${kind}`,
+        source: `market-data.${kind}`,
         periodEnd,
         periodType,
         currency,
@@ -155,7 +155,7 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
 
   const quoteEvidenceId = await sha256Hex({
     symbol: bundle.instrument.symbol,
-    source: "alpha-vantage.global-quote",
+    source: "market-data.quote",
     effectiveDate: asOf,
     value: bundle.quote.price,
   });
@@ -172,7 +172,7 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
           ? quoteEvidenceId
           : await sha256Hex({
               symbol: bundle.instrument.symbol,
-              source: "alpha-vantage.time-series-daily",
+              source: "market-data.prices",
               effectiveDate: date,
               close,
             });
@@ -198,7 +198,7 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
   const evidence = [
     {
       id: quoteEvidenceId,
-      source: "alpha-vantage.global-quote",
+      source: "market-data.quote",
       effectiveDate: asOf,
       valueReference: "quote.close",
     },
@@ -206,7 +206,7 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
       .filter((point) => point.evidenceId !== quoteEvidenceId)
       .map((point) => ({
         id: point.evidenceId,
-        source: "alpha-vantage.time-series-daily",
+        source: "market-data.prices",
         effectiveDate: point.date,
         valueReference: "price.close",
       })),
@@ -217,7 +217,7 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
     ].flatMap(([kind, rows]) =>
       (rows as typeof income).map((row) => ({
         id: row.evidenceId,
-        source: `alpha-vantage.${kind}`,
+        source: `market-data.${kind}`,
         effectiveDate: row.periodEnd,
         valueReference: `${kind}.${row.periodType}`,
       })),

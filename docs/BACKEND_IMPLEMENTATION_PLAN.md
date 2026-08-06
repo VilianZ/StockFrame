@@ -11,11 +11,11 @@ Implement the complete server-side analysis flow inside one Next.js TypeScript p
 ```text
 validated request
 -> resolved instrument
--> Alpha Vantage data
+-> Business Quant data
 -> normalized snapshot
 -> deterministic metrics
 -> quality gate
--> one OpenRouter analysis
+-> one Gemini analysis
 -> validated final report
 -> HTTP response
 ```
@@ -46,7 +46,8 @@ lib/
     errors.ts
     versions.ts
   market-data/
-    alpha-vantage.ts
+    business-quant.ts
+    business-quant-parsers.ts
     normalize.ts
     resolve-instrument.ts
     types.ts
@@ -58,7 +59,8 @@ lib/
     assess.ts
   ai/
     evidence-packet.ts
-    openrouter.ts
+    gemini.ts
+    gemini-schema.ts
     prompt.ts
     report-schema.ts
   server/
@@ -107,7 +109,10 @@ The project boots locally, contracts are frozen for the first vertical slice, an
 ### Deliverables
 
 - Implement a small `MarketDataProvider` interface.
-- Implement the Alpha Vantage adapter using server-side `fetch`.
+- Implement the Business Quant adapter using server-side `fetch`.
+- Resolve company names from the `security_type=Equity` universe with a 24-hour bounded cache.
+- Fetch profile, quarterly IS/BS/CF, and `mode=eod` prices with no more than five uncached-ticker calls.
+- Accept only the `general` statement template and parse nested sections using `reportedValue.raw`.
 - Add timeouts with `AbortController`.
 - Add at most one retry for transient transport or upstream server failures.
 - Classify invalid key, rate limit, timeout, malformed payload, not found, and upstream errors.
@@ -115,7 +120,7 @@ The project boots locally, contracts are frozen for the first vertical slice, an
 - Return candidates rather than guessing ambiguous companies.
 - Fetch the minimum source set needed by the metric engine.
 - Redact provider keys and sensitive query values from logs.
-- Add recorded, sanitized fixtures for every required provider response.
+- Add recorded, minimal, sanitized Business Quant fixtures for every required response.
 
 ### Tests
 
@@ -129,7 +134,7 @@ The project boots locally, contracts are frozen for the first vertical slice, an
 
 ### Gate
 
-A fixture-backed request can produce a typed set of raw provider records without React, OpenRouter, or live network access.
+A fixture-backed request can produce a typed set of raw provider records without React, Gemini, or live network access.
 
 ## 6. Milestone 2 — normalization, metrics, evidence, and quality
 
@@ -176,7 +181,7 @@ Fixtures can produce a complete snapshot, metric set, evidence set, and quality 
 
 ### Deliverables
 
-- Configure one explicit OpenRouter model ID from a server-only variable.
+- Configure one explicit Gemini GA model ID from a server-only variable.
 - Build a deterministic, size-bounded evidence packet.
 - Clearly delimit user focus and provider text as untrusted input.
 - Define one system instruction and one versioned prompt contract.
@@ -266,8 +271,8 @@ All required scenarios pass repeatedly with fixtures and fake model responses. O
 
 - Connect the Next.js repository to one Vercel project.
 - Pin the supported Node.js runtime version.
-- Configure Alpha Vantage and OpenRouter keys as server-side environment variables.
-- Configure one explicit OpenRouter model ID.
+- Configure Business Quant and Gemini keys as server-side environment variables.
+- Configure one explicit Gemini GA model ID.
 - Verify Function runtime and duration settings.
 - Run build, type-check, tests, and secret scan before deployment.
 - Deploy Preview and Production environments.
@@ -293,9 +298,9 @@ The same acceptance flow passes locally and on Vercel without Python, Azure, or 
 | Day | Primary target |
 |---:|---|
 | 1 | M0: Next.js foundation, contracts, schemas, and test setup |
-| 2 | M1: Alpha Vantage adapter, resolution, errors, and fixtures |
+| 2 | M1: Business Quant adapter, resolution, errors, and fixtures |
 | 3 | M2: normalization, core metrics, evidence, and quality gate |
-| 4 | M3: OpenRouter prompt, one-call report, and output validation |
+| 4 | M3: Gemini prompt, one-call report, and output validation |
 | 5 | M4: analysis service, Route Handler, and frontend contract support |
 | 6 | M5: integration tests, failure paths, redaction, and live smoke check |
 | 7 | M6: Vercel deployment, end-to-end verification, and bug fixing |
@@ -319,9 +324,9 @@ Live provider tests are opt-in and never run for an ordinary pull request.
 Required:
 
 ```text
-ALPHA_VANTAGE_API_KEY
-OPENROUTER_API_KEY
-OPENROUTER_MODEL_ID
+BUSINESS_QUANT_API_KEY
+GEMINI_API_KEY
+GEMINI_MODEL_ID
 ```
 
 Optional:
@@ -329,8 +334,8 @@ Optional:
 ```text
 ANALYSIS_OUTPUT_LANGUAGE=id
 MARKET_DATA_TIMEOUT_MS
-OPENROUTER_TIMEOUT_MS
-OPENROUTER_MAX_TOKENS
+GEMINI_TIMEOUT_MS
+GEMINI_MAX_OUTPUT_TOKENS
 ANALYZE_MAX_DURATION_SECONDS
 ```
 
@@ -362,7 +367,7 @@ Implement only revised M0:
 6. Replace obsolete milestone checklist names and create the revised M0 checklist.
 7. Append one development-log entry only after implementation files change.
 
-Do not implement Alpha Vantage, OpenRouter, or the Route Handler until the revised M0 gate passes.
+Do not implement Alpha Vantage, Gemini, or the Route Handler until the revised M0 gate passes.
 
 ## 16. Existing Python artifacts
 

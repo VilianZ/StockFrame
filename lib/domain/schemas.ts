@@ -39,6 +39,11 @@ export const InstrumentSchema = z.strictObject({
   region: z.string().trim().min(2).max(80),
 });
 
+export const InstrumentCandidateSchema = z.strictObject({
+  instrument: InstrumentSchema,
+  score: finiteNumber,
+});
+
 export const EvidenceSchema = z.strictObject({
   id: z.string().trim().min(1).max(100),
   source: z.string().trim().min(1).max(100),
@@ -116,7 +121,11 @@ export const ProfileRecommendationSchema = z.strictObject({
   confidence: finiteNumber.min(0).max(1),
   thesis: z.string().trim().min(1).max(2000),
   considerations: z.array(z.string().trim().min(1).max(500)),
-  evidenceIds: z.array(z.string().trim().min(1).max(100)),
+  evidenceIds: z
+    .array(z.string().trim().min(1).max(100))
+    .min(1)
+    .max(64)
+    .refine((ids) => new Set(ids).size === ids.length, "Evidence IDs must be unique"),
 });
 
 const profilesSchema = z.strictObject({
@@ -163,5 +172,6 @@ export const AnalyzeErrorResponseSchema = z.strictObject({
     code: ErrorCodeSchema,
     message: z.string().trim().min(1).max(500),
     retryable: z.boolean(),
+    candidates: z.array(InstrumentCandidateSchema).min(1).max(16).optional(),
   }),
 });

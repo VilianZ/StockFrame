@@ -32,9 +32,12 @@ export class MarketDataError extends Error {
 export interface MarketDataLogEvent {
   operation:
     | "symbol-search"
+    | "universe"
     | "quote"
     | "overview"
+    | "profile"
     | "daily-prices"
+    | "prices"
     | "income-statement"
     | "balance-sheet"
     | "cash-flow";
@@ -65,6 +68,7 @@ export interface QuoteRecord {
 export interface HistoricalPriceRecord {
   symbol: string;
   prices: { date: string; close: number }[];
+  warnings?: string[];
   raw: Record<string, unknown>;
 }
 
@@ -75,6 +79,9 @@ export interface CompanyOverviewRecord {
   currency: string;
   country: string;
   assetType: string;
+  sector?: string;
+  industry?: string;
+  description?: string;
   raw: Record<string, unknown>;
 }
 
@@ -92,9 +99,10 @@ export interface RawMarketDataBundle {
   incomeStatement: FinancialStatementRecord;
   balanceSheet: FinancialStatementRecord;
   cashFlow: FinancialStatementRecord;
+  warnings?: string[];
 }
 
 export interface MarketDataProvider {
-  resolveInstrument(query: string): Promise<InstrumentResolution>;
-  fetchMarketData(instrument: Instrument): Promise<RawMarketDataBundle>;
+  resolveInstrument(query: string, signal?: AbortSignal): Promise<InstrumentResolution>;
+  fetchMarketData(instrument: Instrument, signal?: AbortSignal): Promise<RawMarketDataBundle>;
 }

@@ -1,0 +1,18 @@
+# M4 — Analysis service dan Route Handler
+
+- [x] Implementasikan service `analyze` yang menyusun resolusi instrumen, data pasar, normalisasi, metrics, quality, evidence packet, AI, dan validasi report.
+- [x] Tambahkan `POST /api/analyze` dengan Node.js runtime dan request ID.
+- [x] Validasi content type, ukuran body, query, dan focus secara aman.
+- [x] Tambahkan throttling in-memory per client key dan deadline aplikasi dengan pembatalan dependency.
+- [x] Petakan error provider/AI ke status HTTP stabil dan body aman tanpa secret, prompt, stack trace, atau detail upstream.
+- [x] Pertahankan provider dan AI di server-side route; canonical metrics tetap terpisah dari report AI.
+- [x] Kembalikan snapshot effective dates, warnings metrics, quality limitations, dan disclaimer melalui public response contract.
+- [x] Tambahkan fixture-backed contract tests untuk success, invalid body, ambiguity, insufficient data, provider limit/timeout, model failure, invalid output, dan throttling.
+- [x] Pastikan quality insufficient menghasilkan zero AI call dan dependency lambat dibatalkan sebelum deadline.
+- [x] Lulus lint, strict type-check, unit test, dan production build tanpa live provider/Gemini call.
+- [x] Menutup acceptance gap: kandidat ambiguity dipertahankan, local throttle dipisahkan dari quota provider, overall timeout memakai `ANALYSIS_TIMEOUT`, dan limiter melakukan pruning key kedaluwarsa.
+- [x] Default Route Handler menggunakan Gemini adapter tanpa mengubah service contract, response publik, metrics, quality gate, evidence packet, atau frontend.
+- [x] Default Route Handler menggunakan Business Quant provider; alur M2-M4 dan zero Gemini call untuk data insufficient tetap dipertahankan.
+- [x] Test provider mencakup resolution/profile, nested parsing, EOD validation, timeout, 429, cache expiry, redaction, dan call count tanpa live API.
+- [x] Controlled live analysis AAPL berhasil end-to-end dengan Business Quant dan Gemini; status Gemini tercatat tanpa body respons.
+- [x] Tiga controlled live analysis AAPL berturut-turut berhasil HTTP 200 dengan report hadir dan tanpa rejection unsafe language.

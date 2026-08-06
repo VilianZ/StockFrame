@@ -1,0 +1,52 @@
+{
+  "metadata": { "ticker": "AAPL", "currency": "USD", "template": "general", "statement": "Income Statement", "frequency": "Quarter", "period": "all" },
+  "data": {
+    "Revenue & cost": {
+      "metadata": { "name": "Revenue & cost" },
+      "sections": {
+        "Revenue": { "metadata": { "slug": "revenue" }, "values": [
+          { "date": "2026-06-27", "normalizedDate": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 100 } },
+          { "date": "2026-03-28", "normalizedDate": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 95 } },
+          { "date": "2025-12-27", "normalizedDate": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 90 } },
+          { "date": "2025-09-27", "normalizedDate": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 85 } }
+        ] },
+        "Gross Profit": { "metadata": { "slug": "gross-profit" }, "values": [
+          { "date": "2026-06-27", "normalizedDate": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 45 } },
+          { "date": "2026-03-28", "normalizedDate": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 42 } },
+          { "date": "2025-12-27", "normalizedDate": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 40 } },
+          { "date": "2025-09-27", "normalizedDate": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 38 } }
+        ] },
+        "Operating Income": { "metadata": { "slug": "operating-income" }, "values": [
+          { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 25 } },
+          { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 23 } },
+          { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 21 } },
+          { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 20 } }
+        ] },
+        "Net Income": { "metadata": { "slug": "net-income-towards-common-stockholders" }, "values": [
+          { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 20 } },
+          { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 18 } },
+          { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 17 } },
+          { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 16 } }
+        ] },
+        "EBIT": { "metadata": { "slug": "ebit" }, "values": [
+          { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 25 } },
+          { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 23 } },
+          { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 21 } },
+          { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 20 } }
+        ] },
+        "EBT": { "metadata": { "slug": "ebt" }, "values": [
+          { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 24 } },
+          { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 22 } },
+          { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 20 } },
+          { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 19 } }
+        ] },
+        "Tax": { "metadata": { "slug": "tax-provisions" }, "values": [
+          { "date": "2026-06-27", "periodType": "Quarter", "reportedValue": { "raw": 4 } },
+          { "date": "2026-03-28", "periodType": "Quarter", "reportedValue": { "raw": 4 } },
+          { "date": "2025-12-27", "periodType": "Quarter", "reportedValue": { "raw": 3 } },
+          { "date": "2025-09-27", "periodType": "Quarter", "reportedValue": { "raw": 3 } }
+        ] }
+      }
+    }
+  }
+}

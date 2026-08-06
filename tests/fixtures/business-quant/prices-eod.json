@@ -1,0 +1,7 @@
+{
+  "metadata": { "ticker": "AAPL", "mode": "eod", "from_date": "2026-08-03", "till_date": "2026-08-04", "pagination": { "total_records": 2 } },
+  "data": [
+    { "date": "2026-08-04 16:00:00", "open": 302.73, "high": 310.42, "low": 301.32, "close": 309.38, "volume": 60852881 },
+    { "date": "2026-08-03 16:00:00", "open": 300.00, "high": 305.00, "low": 299.00, "close": 304.00, "volume": 40000000 }
+  ]
+}
