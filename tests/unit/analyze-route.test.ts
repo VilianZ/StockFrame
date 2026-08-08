@@ -79,6 +79,20 @@ function completeBundle(): RawMarketDataBundle {
     incomeStatement: statement(incomeRows),
     balanceSheet: statement(balanceRows),
     cashFlow: statement(cashRows),
+    corporateActions: {
+      status: "available",
+      events: [{
+        date: "2026-06-15",
+        ticker: "AAPL",
+        kind: "dividend",
+        rawAction: "dividend",
+        value: 0.25,
+        relatedTicker: null,
+        relatedName: null,
+        notes: "Fixture event",
+      }],
+      warnings: [],
+    },
   };
 }
 
@@ -116,24 +130,24 @@ class FakeAi implements AiModelAdapter {
 }
 
 function reportFor(input: AiAnalysisRequest): AiAnalysisResult {
-  const evidenceId = input.packet.evidence[0]?.id ?? "missing";
+  const metricId = input.packet.metrics.find((metric) => metric.status === "available")?.id ?? "eps_ttm";
   const profile = (name: "conservative" | "moderate" | "aggressive") => ({
     profile: name,
     rating: "neutral" as const,
     confidence: 0.7,
-    thesis: "Interpretasi berbasis data yang tersedia.",
-    considerations: ["Perlu memantau perubahan data berikutnya."],
-    evidenceIds: [evidenceId],
+    thesis: { text: "Interpretasi berbasis data yang tersedia.", metricIds: [metricId] },
+    considerations: [{ text: "Perlu memantau perubahan data berikutnya.", metricIds: [metricId] }],
   });
 
   return {
     report: {
       schemaVersion: REPORT_SCHEMA_VERSION,
-      summary: "Ringkasan analisis berbasis evidence packet.",
-      strengths: ["Data keuangan tersedia."],
-      risks: ["Data pasar dapat berubah."],
-      uncertainties: ["Prospek masa depan tidak dipastikan oleh snapshot."],
+      summary: { text: "Ringkasan analisis berbasis evidence packet.", metricIds: [metricId] },
+      strengths: [{ text: "Data keuangan tersedia.", metricIds: [metricId] }],
+      risks: [{ text: "Data pasar dapat berubah.", metricIds: [metricId] }],
+      uncertainties: [{ text: "Prospek masa depan tidak dipastikan oleh snapshot.", metricIds: [metricId] }],
       limitations: ["Analisis ini bukan nasihat investasi."],
+      corporateActionClaims: [],
       profiles: {
         conservative: profile("conservative"),
         moderate: profile("moderate"),
@@ -171,6 +185,7 @@ describe("POST /api/analyze", () => {
     expect(body.metrics.length).toBeGreaterThan(0);
     expect(body.quality.aiEligible).toBe(true);
     expect(body.report.profiles).toHaveProperty("conservative");
+    expect(body.snapshot.corporateActions.events[0]).toMatchObject({ kind: "dividend", ticker: "AAPL" });
     expect(provider.resolveCalls).toBe(1);
     expect(provider.fetchCalls).toBe(1);
     expect(ai.calls).toBe(1);
@@ -288,7 +303,10 @@ describe("POST /api/analyze", () => {
     });
     const failureResponse = await createAnalyzeHandler(dependencies(new FakeProvider(), modelFailure))(request({ query: "AAPL" }, "198.51.100.6"));
     expect(failureResponse.status).toBe(502);
-    expect((await failureResponse.json()).error.code).toBe("AI_UNAVAILABLE");
+    const failureBody = await failureResponse.json();
+    expect(failureBody.error.code).toBe("AI_UNAVAILABLE");
+    expect(failureBody.error.message).toBe("Layanan analisis model sedang tidak tersedia.");
+    expect(failureBody.error.message).not.toContain("raw model failure");
 
     const invalidModel = new FakeAi(() => ({ report: { invalid: true } as never, telemetry: { requestId: "fixture", modelId: "fixture", latencyMs: 1 } }));
     const invalidResponse = await createAnalyzeHandler(dependencies(new FakeProvider(), invalidModel))(request({ query: "AAPL" }, "198.51.100.7"));

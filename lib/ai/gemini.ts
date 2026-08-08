@@ -28,7 +28,13 @@ export interface GeminiConfig {
   maxTokens?: number;
   fetchFn?: FetchFunction;
   validationLogger?: (event: { requestId: string; category: ModelValidationFailureCategory }) => void;
-  statusLogger?: (event: { requestId: string; modelId: string; status: number }) => void;
+  statusLogger?: (event: {
+    requestId: string;
+    modelId: string;
+    status: number;
+    providerErrorCode?: string;
+    providerErrorMessage?: string;
+  }) => void;
 }
 
 interface GeminiResponse {
@@ -41,6 +47,20 @@ interface GeminiResponse {
     totalTokenCount?: unknown;
   };
 }
+
+interface GeminiProviderError {
+  code?: string;
+  message?: string;
+}
+
+interface ProviderFailureTelemetry {
+  providerStatus: number;
+  providerErrorCode?: string;
+  providerErrorMessage?: string;
+}
+
+const MAX_PROVIDER_ERROR_CODE_LENGTH = 64;
+const MAX_PROVIDER_ERROR_MESSAGE_LENGTH = 160;
 
 function optionalFinite(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
@@ -58,6 +78,46 @@ function parseUsage(value: GeminiResponse["usageMetadata"]): AiUsage | undefined
 
 function endpoint(baseUrl: string, modelId: string): string {
   return `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(modelId)}:generateContent`;
+}
+
+function sanitizeProviderText(value: unknown, maxLength: number, apiKey?: string): string | undefined {
+  if (typeof value !== "string" && typeof value !== "number") return undefined;
+  let sanitized = String(value);
+  if (apiKey) sanitized = sanitized.split(apiKey).join("[redacted]");
+  sanitized = sanitized
+    .replace(/(?:x-goog-api-key|api[-_ ]?key|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, "[redacted]")
+    .replace(/authorization\s*[:=]\s*(?:bearer\s+)?[^\s,;]+/gi, "[redacted]")
+    .replace(/\bbearer\s+[^\s,;]+/gi, "[redacted]")
+    .replace(/https?:\/\/[^\s]+/gi, "[url redacted]")
+    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!sanitized) return undefined;
+  return sanitized.slice(0, maxLength);
+}
+
+function parseProviderErrorCode(value: unknown, apiKey?: string): string | undefined {
+  return sanitizeProviderText(value, MAX_PROVIDER_ERROR_CODE_LENGTH, apiKey)
+    ?.replace(/[^a-zA-Z0-9_.-]/g, "_");
+}
+
+function providerErrorFromPayload(payload: unknown, apiKey?: string): GeminiProviderError {
+  if (!payload || typeof payload !== "object") return {};
+  const root = payload as Record<string, unknown>;
+  const candidate = root.error && typeof root.error === "object"
+    ? root.error as Record<string, unknown>
+    : root;
+  const code = parseProviderErrorCode(candidate.status ?? candidate.code, apiKey);
+  const message = sanitizeProviderText(candidate.message ?? (typeof root.error === "string" ? root.error : undefined), MAX_PROVIDER_ERROR_MESSAGE_LENGTH, apiKey);
+  return { code, message };
+}
+
+async function parseProviderError(response: Response, apiKey?: string): Promise<GeminiProviderError> {
+  try {
+    return providerErrorFromPayload(await response.json(), apiKey);
+  } catch {
+    return {};
+  }
 }
 
 export class GeminiAdapter implements AiModelAdapter {
@@ -85,11 +145,13 @@ export class GeminiAdapter implements AiModelAdapter {
   async generateReport(input: AiAnalysisRequest, externalSignal?: AbortSignal): Promise<AiAnalysisResult> {
     const startedAt = performance.now();
     const modelForTelemetry = this.modelId ?? "unconfigured";
+    let providerFailure: ProviderFailureTelemetry | undefined;
     const failureTelemetry = (usage?: AiUsage): AiFailureTelemetry => ({
       requestId: input.requestId,
       modelId: modelForTelemetry,
       latencyMs: Math.max(0, Math.round(performance.now() - startedAt)),
       usage,
+      ...providerFailure,
     });
 
     if (!input.packet.quality.aiEligible) {
@@ -128,8 +190,11 @@ export class GeminiAdapter implements AiModelAdapter {
           generationConfig: {
             responseMimeType: "application/json",
             responseSchema: buildFinalReportGeminiSchema(
-              evidenceContext.aliases.map((item) => item.alias),
-              input.packet.quality.decision === "degraded" ? 0.7 : 1,
+              evidenceContext.packet.metrics
+                .filter((metric) => metric.status === "available")
+                .map((metric) => metric.id),
+              input.packet.quality.decision === "degraded" ? 0.7 : 0.85,
+              evidenceContext.packet.corporateActions?.events.map((event) => event.evidenceId) ?? [],
             ),
             maxOutputTokens: this.maxTokens,
           },
@@ -137,8 +202,20 @@ export class GeminiAdapter implements AiModelAdapter {
         signal: controller.signal,
       });
 
-      this.statusLogger?.({ requestId: input.requestId, modelId: modelForTelemetry, status: response.status });
       if (!response.ok) {
+        const providerError = await parseProviderError(response, this.apiKey);
+        providerFailure = {
+          providerStatus: response.status,
+          providerErrorCode: providerError.code,
+          providerErrorMessage: providerError.message,
+        };
+        this.statusLogger?.({
+          requestId: input.requestId,
+          modelId: modelForTelemetry,
+          status: response.status,
+          providerErrorCode: providerError.code,
+          providerErrorMessage: providerError.message,
+        });
         throw new AiError(
           "AI_UNAVAILABLE",
           "Gemini did not return a successful response",

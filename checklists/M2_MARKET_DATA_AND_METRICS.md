@@ -19,3 +19,5 @@
 - [x] Menghapus runtime adapter, parser, test, dan fixture Alpha Vantage setelah test Business Quant lulus.
 - [x] Melewati row universe equity yang tidak memiliki ticker, nama, atau exchange tanpa membuang kandidat valid; no-candidate tetap ditolak.
 - [x] Menangani duplicate EOD dengan OHLC identik atau konflik close terbatas melalui volume terbesar, sambil menolak konflik open/high/low.
+- [x] Menambahkan Corporate Actions Business Quant sebagai enrichment call keenam dengan parser ticker-safe, canonical kind, bounded notes, deterministic deduplication, dan stable evidence IDs.
+- [x] Menyimpan status `available/empty/unavailable`, membatasi evidence packet ke 20 event terbaru, serta memberi warning split saat adjusted-price belum terverifikasi tanpa mengubah historical prices.

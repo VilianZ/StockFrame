@@ -1,5 +1,8 @@
+import type { CorporateActionKind } from "../domain";
 import type {
   CompanyOverviewRecord,
+  CorporateActionEnrichmentInput,
+  CorporateActionInput,
   FinancialStatementRecord,
   HistoricalPriceRecord,
 } from "./provider";
@@ -339,4 +342,109 @@ export function parseBusinessQuantPrices(input: unknown): {
     raw: { provider: "business-quant", mode: "eod" },
   };
   return { symbol, prices, warnings, historical };
+}
+
+const CORPORATE_ACTION_KIND_MAP: Record<string, CorporateActionKind> = {
+  dividend: "dividend",
+  split: "split",
+  merger: "merger",
+  merged_into: "merger",
+  merged_with: "merger",
+  acquisition: "acquisition",
+  acquisition_by: "acquisition",
+  acquisition_of: "acquisition",
+  spinoff: "spinoff",
+  spinoff_dividend: "spinoff",
+  spinoff_from: "spinoff",
+  bankruptcy: "bankruptcy",
+  delisting: "delisting",
+  delisted: "delisting",
+  listing: "listing",
+  listed: "listing",
+  ticker_change: "ticker_change",
+  ticker_adopted: "ticker_change",
+  ticker_retired: "ticker_change",
+  relation: "other",
+};
+
+function sanitizeBoundedText(value: unknown, field: string, maxLength: number): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "string") return malformed(`Business Quant corporate action ${field} is invalid`);
+  const sanitized = value.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, maxLength);
+  return sanitized || null;
+}
+
+function nullableFinite(value: unknown, field: string): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "string" && value.trim().length === 0) return malformed(`Business Quant corporate action ${field} is invalid`);
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) return malformed(`Business Quant corporate action ${field} is invalid`);
+  return parsed;
+}
+
+function canonicalCorporateActionKind(rawAction: string): { kind: CorporateActionKind; known: boolean } {
+  const normalized = rawAction.toLowerCase().replace(/\s+/g, "_");
+  const kind = CORPORATE_ACTION_KIND_MAP[normalized];
+  return kind ? { kind, known: true } : { kind: "other", known: false };
+}
+
+export function parseBusinessQuantCorporateActions(
+  input: unknown,
+  expectedTicker: string,
+): CorporateActionEnrichmentInput {
+  const root = record(input, "Business Quant corporate actions payload is not an object");
+  metadata(root);
+  if (!Array.isArray(root.data)) return malformed("Business Quant corporate actions data is missing");
+  if (root.data.length === 0) return { status: "empty", events: [], warnings: [] };
+
+  const ticker = expectedTicker.trim().toUpperCase();
+  const warnings: string[] = [];
+  const events: CorporateActionInput[] = [];
+  let excludedOtherTicker = false;
+  const rawRows = root.data.slice(0, 100);
+  if (root.data.length > 100) warnings.push("Corporate actions dibatasi ke 100 record provider pertama.");
+
+  for (const item of rawRows) {
+    const row = record(item, "Business Quant corporate action row is malformed");
+    const rowTicker = requiredString(row.ticker, "Business Quant corporate action ticker is missing").toUpperCase();
+    if (rowTicker !== ticker) {
+      excludedOtherTicker = true;
+      continue;
+    }
+    const date = row.date;
+    if (!validDate(date)) return malformed("Business Quant corporate action date is invalid");
+    const rawAction = sanitizeBoundedText(row.action ?? row.rawAction, "action", 100);
+    if (!rawAction) return malformed("Business Quant corporate action action is missing");
+    const { kind, known } = canonicalCorporateActionKind(rawAction);
+    if (!known) warnings.push("Corporate action type provider yang belum dikenal dipetakan ke other.");
+    events.push({
+      date,
+      ticker: rowTicker,
+      kind,
+      rawAction,
+      value: nullableFinite(row.value, "value"),
+      relatedTicker: sanitizeBoundedText(row.related_ticker, "related ticker", 20),
+      relatedName: sanitizeBoundedText(row.related_name, "related name", 200),
+      notes: sanitizeBoundedText(row.notes, "notes", 500),
+    });
+  }
+
+  if (excludedOtherTicker) warnings.push("Corporate action untuk ticker lain diabaikan.");
+  const seen = new Set<string>();
+  const deduplicated = events.filter((event) => {
+    const key = JSON.stringify(event);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).sort((left, right) => {
+    const dateOrder = right.date.localeCompare(left.date);
+    if (dateOrder !== 0) return dateOrder;
+    return JSON.stringify(left).localeCompare(JSON.stringify(right));
+  });
+  if (deduplicated.length !== events.length) warnings.push("Duplicate corporate action record dikonsolidasikan.");
+  return {
+    status: deduplicated.length === 0 ? "empty" : "available",
+    events: deduplicated,
+    warnings: [...new Set(warnings)].slice(0, 20),
+  };
 }

@@ -2,51 +2,89 @@ import { REPORT_SCHEMA_VERSION } from "../domain";
 
 type ProfileName = "conservative" | "moderate" | "aggressive";
 
-function profileSchema(profileName: ProfileName, allowedEvidenceIds: readonly string[], confidenceMaximum: number) {
-  const evidenceItems = {
+function metricClaimSchema(allowedMetricIds: readonly string[]) {
+  const metricItems = {
     type: "STRING" as const,
-    ...(allowedEvidenceIds.length > 0 ? { enum: [...allowedEvidenceIds] } : {}),
+    ...(allowedMetricIds.length > 0 ? { enum: [...allowedMetricIds] } : {}),
   };
+
+  return {
+    type: "OBJECT",
+    properties: {
+      // Text length is enforced by FinalReportSchema; keep this provider
+      // schema within Gemini's portable structured-output subset.
+      text: { type: "STRING" },
+      metricIds: {
+        type: "ARRAY",
+        items: metricItems,
+        minItems: allowedMetricIds.length > 0 ? 1 : 0,
+        maxItems: allowedMetricIds.length > 0 ? 16 : 0,
+      },
+    },
+    required: ["text", "metricIds"],
+  };
+}
+
+function profileSchema(profileName: ProfileName, allowedMetricIds: readonly string[], confidenceMaximum: number) {
 
   return {
   type: "OBJECT",
   properties: {
     profile: { type: "STRING", enum: [profileName] },
     rating: { type: "STRING", enum: ["positive", "neutral", "negative"] },
-    confidence: { type: "NUMBER", minimum: 0, maximum: confidenceMaximum },
-    thesis: { type: "STRING" },
-    considerations: { type: "ARRAY", items: { type: "STRING" } },
-    evidenceIds: { type: "ARRAY", items: evidenceItems, minItems: 1, maxItems: 64 },
+    confidence: { type: "NUMBER", minimum: 0.4, maximum: confidenceMaximum },
+    thesis: metricClaimSchema(allowedMetricIds),
+    considerations: { type: "ARRAY", items: metricClaimSchema(allowedMetricIds), minItems: 1, maxItems: 16 },
   },
-  required: ["profile", "rating", "confidence", "thesis", "considerations", "evidenceIds"],
+  required: ["profile", "rating", "confidence", "thesis", "considerations"],
+  };
+}
+
+function corporateActionClaimSchema(allowedEvidenceIds: readonly string[]) {
+  return {
+    type: "OBJECT",
+    properties: {
+      evidenceId: {
+        type: "STRING" as const,
+        ...(allowedEvidenceIds.length > 0 ? { enum: [...allowedEvidenceIds] } : {}),
+      },
+      claim: { type: "STRING" },
+    },
+    required: ["evidenceId", "claim"],
   };
 }
 
 export function buildFinalReportGeminiSchema(
-  allowedEvidenceIds: readonly string[],
-  confidenceMaximum = 1,
+  allowedMetricIds: readonly string[],
+  confidenceMaximum = 0.85,
+  allowedCorporateActionEvidenceIds: readonly string[] = [],
 ) {
   return {
   type: "OBJECT",
   properties: {
     schemaVersion: { type: "STRING", enum: [REPORT_SCHEMA_VERSION] },
-    summary: { type: "STRING" },
-    strengths: { type: "ARRAY", items: { type: "STRING" } },
-    risks: { type: "ARRAY", items: { type: "STRING" } },
-    uncertainties: { type: "ARRAY", items: { type: "STRING" } },
+    summary: metricClaimSchema(allowedMetricIds),
+    strengths: { type: "ARRAY", items: metricClaimSchema(allowedMetricIds), minItems: 1, maxItems: 16 },
+    risks: { type: "ARRAY", items: metricClaimSchema(allowedMetricIds), minItems: 1, maxItems: 16 },
+    uncertainties: { type: "ARRAY", items: metricClaimSchema(allowedMetricIds), minItems: 1, maxItems: 16 },
     limitations: { type: "ARRAY", items: { type: "STRING" } },
+    corporateActionClaims: {
+      type: "ARRAY",
+      items: corporateActionClaimSchema(allowedCorporateActionEvidenceIds),
+      maxItems: allowedCorporateActionEvidenceIds.length > 0 ? 20 : 0,
+    },
     profiles: {
       type: "OBJECT",
       properties: {
-        conservative: profileSchema("conservative", allowedEvidenceIds, confidenceMaximum),
-        moderate: profileSchema("moderate", allowedEvidenceIds, confidenceMaximum),
-        aggressive: profileSchema("aggressive", allowedEvidenceIds, confidenceMaximum),
+        conservative: profileSchema("conservative", allowedMetricIds, confidenceMaximum),
+        moderate: profileSchema("moderate", allowedMetricIds, confidenceMaximum),
+        aggressive: profileSchema("aggressive", allowedMetricIds, confidenceMaximum),
       },
       required: ["conservative", "moderate", "aggressive"],
     },
     disclaimer: { type: "STRING" },
   },
-  required: ["schemaVersion", "summary", "strengths", "risks", "uncertainties", "limitations", "profiles", "disclaimer"],
+  required: ["schemaVersion", "summary", "strengths", "risks", "uncertainties", "limitations", "corporateActionClaims", "profiles", "disclaimer"],
   };
 }
 

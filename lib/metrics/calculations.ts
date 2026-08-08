@@ -261,14 +261,18 @@ export function calculateMetrics(snapshot: MarketSnapshot): Metric[] {
       : available("roic", (ebit.value * (1 - taxExpense.value / pretax.value)) / investedCapital, "ratio", "roic-ttm-average-operating-invested-capital-v2", [], roicEvidence);
 
   const prices = [...snapshot.prices].sort((left, right) => right.date.localeCompare(left.date));
+  const splitWarning = snapshot.corporateActions.status === "available"
+    && snapshot.corporateActions.events.some((event) => event.kind === "split")
+    ? ["Corporate action split terdeteksi; status adjusted-price belum terverifikasi"]
+    : [];
   const priceReturn = prices.length < 2
-    ? notAvailable("price_return", "ratio", "price-return-v1", ["Minimal dua harga efektif diperlukan"], priceEvidence)
-    : available("price_return", prices[0].close / prices[prices.length - 1].close - 1, "ratio", "price-return-v1", [], prices.map((point) => point.evidenceId));
+    ? notAvailable("price_return", "ratio", "price-return-v1", ["Minimal dua harga efektif diperlukan", ...splitWarning], priceEvidence)
+    : available("price_return", prices[0].close / prices[prices.length - 1].close - 1, "ratio", "price-return-v1", splitWarning, prices.map((point) => point.evidenceId));
   const dailyReturns = prices.slice(0, -1).map((point, index) => point.close / prices[index + 1].close - 1).reverse();
   const mean = dailyReturns.length ? dailyReturns.reduce((sum, current) => sum + current, 0) / dailyReturns.length : null;
   const volatility = dailyReturns.length < 2 || mean === null
-    ? notAvailable("volatility", "ratio", "volatility-annualized-v1", ["Minimal tiga harga efektif diperlukan untuk volatilitas"], prices.map((point) => point.evidenceId))
-    : available("volatility", Math.sqrt(dailyReturns.reduce((sum, current) => sum + (current - mean) ** 2, 0) / dailyReturns.length) * SQRT_252, "ratio", "volatility-annualized-v1", [], prices.map((point) => point.evidenceId));
+    ? notAvailable("volatility", "ratio", "volatility-annualized-v1", ["Minimal tiga harga efektif diperlukan untuk volatilitas", ...splitWarning], prices.map((point) => point.evidenceId))
+    : available("volatility", Math.sqrt(dailyReturns.reduce((sum, current) => sum + (current - mean) ** 2, 0) / dailyReturns.length) * SQRT_252, "ratio", "volatility-annualized-v1", splitWarning, prices.map((point) => point.evidenceId));
 
   return [
     der,

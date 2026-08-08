@@ -16,3 +16,12 @@
 - [x] Menambahkan logging kategori kegagalan validator tanpa raw output dan menyelaraskan schema Gemini dengan evidence IDs serta batas confidence final.
 - [x] Menggunakan alias evidence pendek deterministik (`E1`, `E2`, dan seterusnya), mapping balik ke canonical SHA, serta pin profile per cabang pada Gemini schema.
 - [x] Menjaga frasa disclaimer dan istilah fundamental netral tetap lolos filter unsafe language, sambil tetap menolak instruksi trading eksplisit.
+- [x] Mengirim Corporate Actions sebagai event terstruktur berbasis evidence ID ke Gemini tanpa raw provider payload atau framing sebagai berita; klaim corporate action terpisah, ber-evidence, dan divalidasi terhadap snapshot.
+- [x] Memisahkan safety validation dari provenance validation, membatasi enum claim ke alias event corporate action, dan menaikkan versi prompt/report contract.
+- [x] Memaksa nol claim saat packet tidak memiliki corporate-action evidence dan mempertahankan prose status normal seperti pendaftaran bursa serta dividend yield.
+- [x] Mengubah report menjadi claim granular `{ text, metricIds }` dengan metric ID yang tersedia sebagai referensi utama, sementara corporate-action claim tetap memakai alias event terpisah.
+- [x] Menerapkan satu metric-policy terpusat untuk kategori valuasi, leverage, likuiditas, profitabilitas, arus kas, dan risiko pasar.
+- [x] Menolak metric unavailable, klaim eksternal, kategori yang tidak didukung metric, confidence di luar 0,40–0,85, serta confidence degraded di atas 0,70.
+- [x] Memvalidasi angka pada claim terhadap nilai canonical dan unit metric, menambahkan policy earnings untuk `eps_ttm`, serta memblokir istilah Corporate Action pada grounded prose.
+- [x] Menormalkan format angka natural dan mengabaikan tanggal/tahun sebagai nilai metric, serta memblokir variasi narasi `ticker_change`.
+- [x] Mencatat telemetry aman untuk kegagalan HTTP Gemini tanpa secret, prompt, body provider, atau perubahan pada error response publik.

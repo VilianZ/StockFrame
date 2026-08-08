@@ -26,6 +26,7 @@ function snapshot(overrides: Partial<MarketSnapshot> = {}): MarketSnapshot {
     evidence: [...income, ...balanceSheet, ...cashFlow].map((row) => ({ id: row.evidenceId, source: "fixture", effectiveDate: row.periodEnd, valueReference: "fixture" })),
     prices: [{ date: "2026-08-05", close: 200, evidenceId: "price-0" }, { date: "2026-08-04", close: 180, evidenceId: "price-1" }, { date: "2026-08-01", close: 160, evidenceId: "price-2" }],
     financials: { income, balanceSheet, cashFlow },
+    corporateActions: { status: "empty", events: [], warnings: [] },
     ...overrides,
   };
 }
@@ -118,5 +119,27 @@ describe("pure financial metrics", () => {
     const metrics = calculateMetrics(nonConsecutive);
     expect(byId(metrics, "eps_ttm")).toMatchObject({ status: "not_available", value: null });
     expect(byId(metrics, "eps_ttm").warnings[0]).toContain("partial_ttm");
+  });
+
+  test("warns price metrics when a split exists without adjusted-price verification", () => {
+    const metrics = calculateMetrics(snapshot({
+      corporateActions: {
+        status: "available",
+        events: [{
+          date: "2026-06-15",
+          ticker: "AAPL",
+          kind: "split",
+          rawAction: "split",
+          value: 4,
+          relatedTicker: null,
+          relatedName: null,
+          notes: null,
+          evidenceId: "corporate-action-1",
+        }],
+        warnings: [],
+      },
+    }));
+    expect(byId(metrics, "price_return").warnings).toContain("Corporate action split terdeteksi; status adjusted-price belum terverifikasi");
+    expect(byId(metrics, "volatility").warnings).toContain("Corporate action split terdeteksi; status adjusted-price belum terverifikasi");
   });
 });

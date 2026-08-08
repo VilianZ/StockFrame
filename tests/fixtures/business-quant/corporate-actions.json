@@ -1,0 +1,68 @@
+{
+  "metadata": {
+    "ticker": "AAPL",
+    "action_range": ["dividend", "split", "acquisition_by", "ticker_adopted", "relation"]
+  },
+  "data": [
+    {
+      "date": "2026-07-01",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "dividend",
+      "value": "0.25",
+      "related_ticker": null,
+      "related_name": null,
+      "notes": "Cash dividend"
+    },
+    {
+      "date": "2026-06-15",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "split",
+      "value": "4",
+      "related_ticker": null,
+      "related_name": null,
+      "notes": "Four-for-one split"
+    },
+    {
+      "date": "2026-05-20",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "acquisition_by",
+      "value": null,
+      "related_ticker": "MSFT",
+      "related_name": "Microsoft Corporation",
+      "notes": "Counterparty event"
+    },
+    {
+      "date": "2026-04-10",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "ticker_adopted",
+      "value": null,
+      "related_ticker": null,
+      "related_name": null,
+      "notes": "Ticker changed"
+    },
+    {
+      "date": "2026-03-10",
+      "ticker": "AAPL",
+      "name": "Apple Inc.",
+      "action": "future_provider_action",
+      "value": null,
+      "related_ticker": null,
+      "related_name": null,
+      "notes": "Unknown action"
+    },
+    {
+      "date": "2026-02-10",
+      "ticker": "MSFT",
+      "name": "Microsoft Corporation",
+      "action": "dividend",
+      "value": "1",
+      "related_ticker": null,
+      "related_name": null,
+      "notes": "Must be excluded"
+    }
+  ]
+}

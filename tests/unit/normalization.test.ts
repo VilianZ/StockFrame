@@ -74,6 +74,45 @@ describe("market data normalization", () => {
     expect(second.financials.income[0].evidenceId).toBe(first.financials.income[0].evidenceId);
   });
 
+  test("normalizes corporate actions with stable evidence IDs", async () => {
+    const input = {
+      status: "available" as const,
+      warnings: [],
+      events: [{
+        date: "2026-06-15",
+        ticker: "AAPL",
+        kind: "split" as const,
+        rawAction: "split",
+        value: 4,
+        relatedTicker: null,
+        relatedName: null,
+        notes: "Four-for-one split",
+      }],
+    };
+    const first = await normalizeMarketData(bundle({ corporateActions: input }));
+    const second = await normalizeMarketData(bundle({ corporateActions: structuredClone(input) }));
+    expect(first.corporateActions.events[0]!.evidenceId).toHaveLength(64);
+    expect(second.corporateActions.events[0]!.evidenceId).toBe(first.corporateActions.events[0]!.evidenceId);
+    expect(first.corporateActions.events[0]).toMatchObject({ kind: "split", value: 4 });
+  });
+
+  test("excludes corporate actions after the snapshot boundary", async () => {
+    const snapshot = await normalizeMarketData(bundle({
+      corporateActions: {
+        status: "available",
+        warnings: [],
+        events: [
+          { date: "2026-08-04", ticker: "AAPL", kind: "dividend", rawAction: "dividend", value: 1, relatedTicker: null, relatedName: null, notes: null },
+          { date: "2026-08-06", ticker: "AAPL", kind: "split", rawAction: "split", value: 2, relatedTicker: null, relatedName: null, notes: null },
+        ],
+      },
+    }));
+    expect(snapshot.corporateActions.events).toHaveLength(1);
+    expect(snapshot.corporateActions.events[0]?.date).toBe("2026-08-04");
+    expect(snapshot.corporateActions.warnings).toContain("Corporate action setelah tanggal snapshot diabaikan.");
+    expect(snapshot.evidence.filter((item) => item.source === "market-data.corporate-action")).toHaveLength(1);
+  });
+
   test("normalizes compact daily prices and excludes prices after the quote date", async () => {
     const snapshot = await normalizeMarketData(bundle({
       historicalPrices: {

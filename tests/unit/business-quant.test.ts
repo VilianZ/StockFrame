@@ -6,11 +6,13 @@ import income from "../fixtures/business-quant/income.json";
 import balance from "../fixtures/business-quant/balance.json";
 import cashFlow from "../fixtures/business-quant/cashflow.json";
 import prices from "../fixtures/business-quant/prices-eod.json";
+import corporateActions from "../fixtures/business-quant/corporate-actions.json";
 import {
   BusinessQuantProvider,
   MarketDataError,
   hasFourConsecutiveQuarters,
   parseBusinessQuantProfile,
+  parseBusinessQuantCorporateActions,
   parseBusinessQuantPrices,
   parseBusinessQuantStatement,
 } from "../../lib/market-data";
@@ -60,7 +62,8 @@ function makeFetch(options: {
       ?? options.bodyByStatement?.[statement]
       ?? (url.pathname === "/universe" ? universe
         : url.pathname === "/stocks/profile" ? profile
-          : url.pathname === "/quotes" ? prices
+      : url.pathname === "/quotes" ? prices
+            : url.pathname === "/corporate_actions" ? corporateActions
             : url.searchParams.get("statement") === "IS" ? income
               : url.searchParams.get("statement") === "BS" ? balance
                 : cashFlow);
@@ -163,6 +166,58 @@ describe("Business Quant parser", () => {
     delete missing.data[0].close;
     expect(() => parseBusinessQuantPrices(missing)).toThrowError(MarketDataError);
   });
+
+  test("parses corporate action variants, filters mixed tickers, bounds notes, and orders deterministically", () => {
+    const payload = clone(corporateActions) as Record<string, unknown>;
+    const rows = payload.data as Array<Record<string, unknown>>;
+    rows[0]!.notes = `\u0000${"x".repeat(700)}`;
+    rows.push({ ...rows[0] });
+    const parsed = parseBusinessQuantCorporateActions(payload, "AAPL");
+    expect(parsed.status).toBe("available");
+    expect(parsed.events).toHaveLength(5);
+    expect(parsed.events.map((event) => event.date)).toEqual([
+      "2026-07-01", "2026-06-15", "2026-05-20", "2026-04-10", "2026-03-10",
+    ]);
+    expect(parsed.events[0]).toMatchObject({ kind: "dividend", value: 0.25 });
+    expect(parsed.events[1]).toMatchObject({ kind: "split", value: 4 });
+    expect(parsed.events[2]).toMatchObject({ kind: "acquisition", relatedTicker: "MSFT" });
+    expect(parsed.events[3]).toMatchObject({ kind: "ticker_change" });
+    expect(parsed.events[4]).toMatchObject({ kind: "other", rawAction: "future_provider_action" });
+    expect(parsed.events[0]!.notes).toHaveLength(500);
+    expect(parsed.warnings).toEqual(expect.arrayContaining([
+      "Corporate action type provider yang belum dikenal dipetakan ke other.",
+      "Corporate action untuk ticker lain diabaikan.",
+      "Duplicate corporate action record dikonsolidasikan.",
+    ]));
+  });
+
+  test("accepts an empty corporate action list and rejects malformed date or value", () => {
+    expect(parseBusinessQuantCorporateActions({ metadata: {}, data: [] }, "AAPL")).toEqual({ status: "empty", events: [], warnings: [] });
+    const invalidDate = clone(corporateActions) as Record<string, unknown>;
+    (invalidDate.data as Array<Record<string, unknown>>)[0]!.date = "not-a-date";
+    expect(() => parseBusinessQuantCorporateActions(invalidDate, "AAPL")).toThrowError(/date/);
+    const invalidValue = clone(corporateActions) as Record<string, unknown>;
+    (invalidValue.data as Array<Record<string, unknown>>)[0]!.value = "not-a-number";
+    expect(() => parseBusinessQuantCorporateActions(invalidValue, "AAPL")).toThrowError(/value/);
+  });
+
+  test.each([
+    ["merged_into", "merger"],
+    ["merged_with", "merger"],
+    ["acquisition_of", "acquisition"],
+    ["spinoff_dividend", "spinoff"],
+    ["spinoff_from", "spinoff"],
+    ["listed", "listing"],
+    ["delisted", "delisting"],
+    ["ticker_retired", "ticker_change"],
+    ["relation", "other"],
+  ] as const)("maps raw action %s to canonical kind %s", (rawAction, kind) => {
+    const parsed = parseBusinessQuantCorporateActions({
+      metadata: {},
+      data: [{ ticker: "AAPL", date: "2026-01-01", action: rawAction, value: null }],
+    }, "AAPL");
+    expect(parsed.events[0]?.kind).toBe(kind);
+  });
 });
 
 describe("Business Quant provider", () => {
@@ -198,7 +253,7 @@ describe("Business Quant provider", () => {
     expect(calls).toHaveLength(1);
   });
 
-  test("resolves equity names from the cached universe and fetches exactly five calls", async () => {
+  test("resolves equity names from the cached universe and fetches exactly six calls", async () => {
     const { fetchFn, calls } = makeFetch();
     let now = 1_000;
     const instance = provider(fetchFn, { now: () => now });
@@ -209,12 +264,35 @@ describe("Business Quant provider", () => {
     expect(result.overview).toMatchObject({ symbol: "AAPL", sector: "Technology", industry: "Consumer Electronics", description: expect.any(String) });
     expect(result.quote.latestTradingDay).toBe("2026-08-04");
     expect(result.incomeStatement.quarterlyReports[0].totalRevenue).toBe(100);
-    expect(calls.filter((call) => call.pathname !== "/universe")).toHaveLength(5);
+    expect(calls.filter((call) => call.pathname !== "/universe")).toHaveLength(6);
     expect(calls.every((call) => call.searchParams.get("api_key") === "fake-business-quant-key")).toBe(true);
     expect(calls.find((call) => call.pathname === "/quotes")?.searchParams.get("mode")).toBe("eod");
+    const corporateCall = calls.find((call) => call.pathname === "/corporate_actions")!;
+    expect(corporateCall.searchParams.get("ticker")).toBe("AAPL");
+    expect(corporateCall.searchParams.get("period")).toBe("1y");
+    expect(corporateCall.searchParams.get("action")).toBe("all");
+    expect(corporateCall.searchParams.get("limit")).toBe("100");
+    expect(result.corporateActions).toMatchObject({ status: "available", events: expect.any(Array) });
     now += 20 * 60 * 1_000;
     await instance.fetchMarketData(instrument);
     expect(calls.filter((call) => call.pathname === "/quotes")).toHaveLength(2);
+    expect(calls.filter((call) => call.pathname === "/corporate_actions")).toHaveLength(2);
+  });
+
+  test.each([429, 500])("keeps the main bundle when corporate actions return %s", async (status) => {
+    const { fetchFn, calls } = makeFetch({ statusByPath: { "/corporate_actions": status } });
+    const instance = provider(fetchFn);
+    const result = await instance.fetchMarketData(instrument);
+    expect(result.corporateActions).toMatchObject({ status: "unavailable", events: [] });
+    expect(calls.filter((call) => call.pathname === "/corporate_actions")).toHaveLength(status === 500 ? 2 : 1);
+  });
+
+  test("keeps the main bundle when corporate actions time out", async () => {
+    const { fetchFn, calls } = makeFetch({ waitOnPath: "/corporate_actions" });
+    const instance = provider(fetchFn, { timeoutMs: 1 });
+    const result = await instance.fetchMarketData(instrument);
+    expect(result.corporateActions?.status).toBe("unavailable");
+    expect(calls.filter((call) => call.pathname === "/corporate_actions")).toHaveLength(2);
   });
 
   test("keeps valid AAPL when another equity row has no exchange", async () => {

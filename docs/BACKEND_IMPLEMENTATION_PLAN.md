@@ -111,7 +111,8 @@ The project boots locally, contracts are frozen for the first vertical slice, an
 - Implement a small `MarketDataProvider` interface.
 - Implement the Business Quant adapter using server-side `fetch`.
 - Resolve company names from the `security_type=Equity` universe with a 24-hour bounded cache.
-- Fetch profile, quarterly IS/BS/CF, and `mode=eod` prices with no more than five uncached-ticker calls.
+- Fetch profile, quarterly IS/BS/CF, `mode=eod` prices, and Corporate Actions with no more than six uncached-ticker calls.
+- Parse `/corporate_actions` using `period=1y`, `action=all`, and `limit=100`; keep it as optional structured enrichment with explicit unavailable status.
 - Accept only the `general` statement template and parse nested sections using `reportedValue.raw`.
 - Add timeouts with `AbortController`.
 - Add at most one retry for transient transport or upstream server failures.
@@ -121,6 +122,7 @@ The project boots locally, contracts are frozen for the first vertical slice, an
 - Fetch the minimum source set needed by the metric engine.
 - Redact provider keys and sensitive query values from logs.
 - Add recorded, minimal, sanitized Business Quant fixtures for every required response.
+- Preserve only matching-ticker Corporate Actions rows, map raw action variants to canonical kinds, bound untrusted notes, and retain related counterparty fields.
 
 ### Tests
 
@@ -150,6 +152,7 @@ A fixture-backed request can produce a typed set of raw provider records without
 - Implement invalid-calculation behavior for zero denominators, negative equity, negative EPS, partial periods, missing prices, and currency mismatches.
 - Implement deterministic data-quality assessment.
 - Produce a bounded evidence document for later AI use.
+- Include at most 20 newest Corporate Actions events in the evidence packet and state that they are structured events rather than news.
 
 ### Metric priority
 
@@ -171,6 +174,8 @@ Lower-priority metrics may be omitted from the first vertical slice if their sou
 - Negative equity and EPS have explicit statuses.
 - Future rows cannot enter the selected snapshot.
 - Equivalent snapshots produce stable evidence IDs.
+- Corporate Actions events sort/deduplicate deterministically, retain stable evidence IDs, and do not alter historical prices.
+- A split without verified adjusted prices adds warnings to relevant price metrics; unavailable Corporate Actions do not stop the main pipeline.
 - Quality boundaries deterministically stop, degrade, or permit analysis.
 
 ### Gate
@@ -188,6 +193,12 @@ Fixtures can produce a complete snapshot, metric set, evidence set, and quality 
 - Request one structured final report containing all three risk perspectives.
 - Validate model output before it enters the public response.
 - Reject unknown evidence IDs, unsupported ratings, missing profiles, and invalid confidence.
+- Use granular `{ text, metricIds }` claims for summary, strengths, risks, uncertainties, thesis, and considerations; only available metric IDs are allowed.
+- Enforce one central metric policy for valuation, leverage, liquidity, earnings, profitability, cash flow, and market risk; reject unsupported external claims.
+- Compare numeric literals in grounded prose with the cited canonical metric value and unit before accepting the report.
+- Reject corporate-action terminology in ordinary grounded prose; reserve it for the structured Corporate Action claim or limitations.
+- Keep Corporate Action citations separate with short aliases mapped back to canonical evidence IDs, and allow no claims when no Corporate Action evidence exists.
+- Apply the `0.40`–`0.85` confidence rubric and cap degraded reports at `0.70` with required limitations.
 - Ensure model prose cannot replace canonical metric values.
 - Return a safe typed failure for malformed model output without making an automatic repair call.
 - Capture request ID, model ID, latency, token usage when available, and typed failure without storing secrets or hidden reasoning.
@@ -200,6 +211,12 @@ Fixtures can produce a complete snapshot, metric set, evidence set, and quality 
 - A schema failure makes no follow-up model call and returns a controlled error.
 - Missing, duplicate, and unknown profiles are rejected.
 - Unknown evidence IDs are rejected.
+- Unknown, unavailable, or policy-incompatible metric IDs are rejected.
+- Claims about external facts and Corporate Actions without their dedicated evidence are rejected.
+- Confidence boundaries and degraded-quality caps are enforced.
+- Numeric claims match canonical metric values and percentage units.
+- Earnings-per-share claims are grounded by `eps_ttm`, and ordinary corporate-action prose is rejected.
+- Natural number formatting, scale suffixes, dates/years, and `ticker_change` prose variants are covered by regression tests.
 - Degraded quality caps confidence and preserves limitations.
 - Prompts contain bounded evidence and no raw provider payload.
 - No path contains debate, consensus, tool-calling, or model memory.

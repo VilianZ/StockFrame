@@ -4,6 +4,7 @@ import { InstrumentSchema, type Instrument } from "../domain";
 import { getServerEnv } from "../server/env";
 import {
   parseBusinessQuantPrices,
+  parseBusinessQuantCorporateActions,
   parseBusinessQuantProfile,
   parseBusinessQuantStatement,
   parseBusinessQuantUniverse,
@@ -18,6 +19,7 @@ import {
   type MarketDataProvider,
   type QuoteRecord,
   type RawMarketDataBundle,
+  type CorporateActionEnrichmentInput,
 } from "./provider";
 
 const BASE_URL = "https://data.businessquant.com";
@@ -129,12 +131,13 @@ export class BusinessQuantProvider implements MarketDataProvider {
     if (cached && cached.expiresAt > this.now()) return cached.value;
     if (cached) this.marketDataCache.delete(cacheKey);
 
-    const [profilePayload, incomePayload, balancePayload, cashFlowPayload, pricesPayload] = await Promise.all([
+    const [profilePayload, incomePayload, balancePayload, cashFlowPayload, pricesPayload, corporateActions] = await Promise.all([
       this.request("profile", "/stocks/profile", { ticker: cacheKey }, signal),
       this.request("income-statement", "/statements", { ticker: cacheKey, statement: "IS", frequency: "Quarter", period: "all" }, signal),
       this.request("balance-sheet", "/statements", { ticker: cacheKey, statement: "BS", frequency: "Quarter", period: "all" }, signal),
       this.request("cash-flow", "/statements", { ticker: cacheKey, statement: "CF", frequency: "Quarter", period: "all" }, signal),
       this.request("prices", "/quotes", { ticker: cacheKey, mode: "eod", period: "1y", limit: "260" }, signal),
+      this.fetchCorporateActions(cacheKey, signal),
     ]);
 
     const overview = parseBusinessQuantProfile(profilePayload);
@@ -168,6 +171,7 @@ export class BusinessQuantProvider implements MarketDataProvider {
       incomeStatement,
       balanceSheet,
       cashFlow,
+      corporateActions,
       warnings: parsedPrices.warnings,
     };
     this.marketDataCache.set(cacheKey, { value: bundle, expiresAt: this.now() + this.marketDataTtlMs });
@@ -177,6 +181,34 @@ export class BusinessQuantProvider implements MarketDataProvider {
       this.marketDataCache.delete(oldest);
     }
     return bundle;
+  }
+
+  private async fetchCorporateActions(
+    ticker: string,
+    signal?: AbortSignal,
+  ): Promise<CorporateActionEnrichmentInput> {
+    try {
+      const payload = await this.request("corporate-actions", "/corporate_actions", {
+        ticker,
+        period: "1y",
+        action: "all",
+        limit: "100",
+      }, signal);
+      return parseBusinessQuantCorporateActions(payload, ticker);
+    } catch (error) {
+      if (error instanceof MarketDataError) {
+        return {
+          status: "unavailable",
+          events: [],
+          warnings: ["Corporate actions enrichment tidak tersedia; analisis utama tetap dilanjutkan."],
+        };
+      }
+      return {
+        status: "unavailable",
+        events: [],
+        warnings: ["Corporate actions enrichment tidak tersedia; analisis utama tetap dilanjutkan."],
+      };
+    }
   }
 
   private async getUniverse(signal?: AbortSignal): Promise<BusinessQuantUniverseEntry[]> {

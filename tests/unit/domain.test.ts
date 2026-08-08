@@ -17,17 +17,16 @@ const profile = (name: "conservative" | "moderate" | "aggressive") => ({
   profile: name,
   rating: "neutral" as const,
   confidence: 0.5,
-  thesis: `Thesis ${name}`,
-  considerations: ["Needs more evidence"],
-  evidenceIds: ["evidence-1"],
+  thesis: { text: `Thesis ${name}`, metricIds: ["pe"] },
+  considerations: [{ text: "Needs more evidence", metricIds: ["pe"] }],
 });
 
 const validReport = () => ({
   schemaVersion: REPORT_SCHEMA_VERSION,
-  summary: "Ringkasan edukatif.",
-  strengths: ["Arus kas perlu ditinjau."],
-  risks: ["Data masih terbatas."],
-  uncertainties: ["Periode terbaru belum lengkap."],
+  summary: { text: "Ringkasan edukatif.", metricIds: ["pe"] },
+  strengths: [{ text: "Arus kas perlu ditinjau.", metricIds: ["pe"] }],
+  risks: [{ text: "Data masih terbatas.", metricIds: ["pe"] }],
+  uncertainties: [{ text: "Periode terbaru belum lengkap.", metricIds: ["pe"] }],
   limitations: ["Bukan nasihat keuangan personal."],
   profiles: {
     conservative: profile("conservative"),

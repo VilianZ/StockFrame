@@ -35,7 +35,13 @@ function logGeminiValidationFailure(event: {
   }));
 }
 
-function logGeminiHttpStatus(event: { requestId: string; modelId: string; status: number }): void {
+function logGeminiHttpStatus(event: {
+  requestId: string;
+  modelId: string;
+  status: number;
+  providerErrorCode?: string;
+  providerErrorMessage?: string;
+}): void {
   console.warn("[ai-http]", JSON.stringify(event));
 }
 

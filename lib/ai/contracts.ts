@@ -12,6 +12,9 @@ export interface AiFailureTelemetry {
   modelId: string;
   latencyMs: number;
   usage?: AiUsage;
+  providerStatus?: number;
+  providerErrorCode?: string;
+  providerErrorMessage?: string;
 }
 
 export class AiError extends Error {

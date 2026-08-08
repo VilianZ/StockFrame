@@ -115,9 +115,10 @@ Rules:
   "metrics": [],
   "quality": {},
   "report": {
-    "summary": "...",
-    "strengths": [],
-    "risks": [],
+    "summary": { "text": "...", "metricIds": ["roa"] },
+    "strengths": [{ "text": "...", "metricIds": ["roa"] }],
+    "risks": [{ "text": "...", "metricIds": ["der"] }],
+    "uncertainties": [{ "text": "...", "metricIds": ["volatility"] }],
     "limitations": [],
     "profiles": {
       "conservative": {},
@@ -155,6 +156,8 @@ Domain contracts are plain TypeScript types and schemas independent of React com
 | `AnalysisRequest` | Validated user query and focus |
 | `Instrument` | Canonical ticker, company name, exchange, currency, and region |
 | `Evidence` | Stable ID, source, effective date, and value reference |
+| `CorporateAction` | Bounded structured event with canonical kind, optional counterparty/value, and stable evidence ID |
+| `CorporateActionEnrichment` | `available`, `empty`, or `unavailable` status plus normalized events and warnings |
 | `Metric` | Canonical value, unit, formula ID, status, warnings, and evidence IDs |
 | `MarketSnapshot` | Normalized point-in-time market and financial data |
 | `QualityAssessment` | Deterministic score, flags, and AI eligibility |
@@ -177,6 +180,16 @@ Required version constants:
 - metric-policy version;
 - AI prompt version;
 - report schema version.
+
+### 6.1 Semantic grounding contract
+
+Every grounded report claim uses `{ text, metricIds }`. `metricIds` must contain at least one unique ID from the available canonical metrics in the packet. This applies to `summary`, every item in `strengths`, `risks`, and `uncertainties`, and each profile `thesis` and `considerations` item. `limitations` remain disclosure strings and do not assert new facts.
+
+The allowed metric IDs are `der`, `current_ratio`, `roa`, `roe`, `eps_ttm`, `pe`, `book_value_per_share`, `pbv`, `gross_margin`, `operating_margin`, `net_margin`, `free_cash_flow`, `fcf_margin`, `roic`, `price_return`, and `volatility`. A central policy maps claim categories to the metrics that may support them: valuation, leverage, liquidity, earnings, profitability, cash flow, and market risk. Claims about market share, competition, strategy, innovation, macroeconomics, regulation, sentiment, news, forecasts, or other external facts are rejected.
+
+Numeric literals in grounded claim text must match a cited canonical metric value within a small rounding tolerance; grouped separators, decimal comma, and explicit `ribu/juta/miliar` or `K/M/B/T` scales are normalized before comparison. ISO dates and years are not metric values. Ratio metrics may be written as percentages only when explicitly marked with `%`. Corporate-action terminology, including `ticker changed`, `perubahan ticker`, and `berganti simbol`, is not permitted in ordinary grounded prose, including neutral descriptions. It belongs in `corporateActionClaims` or a limitation field.
+
+Confidence is bounded to `0.40`–`0.85`. The rubric is `0.40`–`0.59` for limited or conflicting evidence, `0.60`–`0.74` for sufficient evidence with limitations, and `0.75`–`0.85` for strong evidence. Degraded quality caps every profile at `0.70` and requires limitations.
 
 Equivalent structured inputs use deterministic serialization and SHA-256 hashing where stable identity is needed for tests, evidence, and future caching.
 
@@ -201,12 +214,16 @@ The minimum useful snapshot may consume:
 - Business Quant stock profile for identity and company metadata;
 - quarterly IS, BS, and CF requests in parallel;
 - strictly historical EOD OHLCV prices.
+- Business Quant Corporate Actions enrichment for structured events in the last year.
 
 Provider rules:
 
 - API keys are read only from server-side environment variables.
 - Business Quant origin and endpoint paths are fixed by the adapter; the API key is sent only as a query parameter.
-- One uncached ticker uses at most five provider calls: profile, IS, BS, CF, and EOD prices. The universe cache is excluded from this limit.
+- One uncached ticker uses at most six provider calls: profile, IS, BS, CF, EOD prices, and Corporate Actions. The universe cache is excluded from this limit.
+- Corporate Actions uses the fixed `/corporate_actions` endpoint with `ticker`, `period=1y`, `action=all`, and `limit=100`. It is structured event data, not news or articles.
+- Corporate Actions rows are validated against the resolved ticker, sorted newest-first, deduplicated deterministically, and normalized to bounded canonical kinds. Empty results are valid; unavailable enrichment keeps the main analysis running with an explicit status and warning.
+- Corporate Actions keeps at most 100 normalized events in the snapshot and at most 20 newest events in the AI evidence packet. Notes are untrusted bounded text with control characters removed.
 - Only the `general` financial-statement template is supported; other templates produce a typed safe failure.
 - Statement values use only `reportedValue.raw`; provider payloads are parsed into normalized records before metrics or Gemini.
 - EOD records require finite positive OHLC values, valid dates, and valid OHLC invariants. Identical-date duplicates are collapsed with the largest volume; conflicting OHLC duplicates fail.
@@ -216,6 +233,7 @@ Provider rules:
 - Distinguish invalid key, quota exceeded, symbol not found, timeout, malformed payload, and upstream failure.
 - Never log complete request URLs when they contain provider credentials.
 - Never send complete raw provider payloads to Gemini.
+- Never adjust historical prices automatically for splits, and never describe price return as total shareholder return. If a split is present while adjusted-price status is unverified, affected price metrics carry a warning.
 - Provider quota assumptions are configurable and are not hard-coded to a specific commercial plan.
 
 The initial implementation may reuse a completed result in the current browser session. Durable cross-user caching is deferred until persistence is actually needed.
@@ -233,7 +251,7 @@ Normalization must:
 - assign stable evidence IDs;
 - prevent `NaN` and infinity from entering JSON.
 
-Every metric references the evidence used to calculate it. The final AI report may cite only evidence IDs included in the packet.
+Every metric references the evidence used to calculate it. The final AI report grounds ordinary claims with available metric IDs; only dedicated Corporate Action claims may cite short aliases that resolve to packet evidence IDs.
 
 ## 10. Deterministic metric engine
 
@@ -292,8 +310,10 @@ The evidence packet contains only:
 - normalized company facts needed for interpretation;
 - canonical metrics and statuses;
 - quality flags;
+- bounded Corporate Actions events with their evidence IDs and enrichment status;
 - user focus delimited as untrusted text;
-- known evidence IDs;
+- available metric IDs for claim grounding;
+- short aliases only for Corporate Action evidence;
 - required output schema and policy instructions.
 
 The model returns:
@@ -304,7 +324,8 @@ The model returns:
 - exactly one conservative perspective;
 - exactly one moderate perspective;
 - exactly one aggressive perspective;
-- citations using known evidence IDs;
+- metric IDs on every grounded claim;
+- Corporate Actions only in `corporateActionClaims`, each tied to a Corporate Action alias that is mapped back to canonical evidence server-side; provider `notes` are bounded context fields, not articles or news.
 - educational disclaimer.
 
 The three perspectives are sections of one report, not separate AI agents or separate requests.
@@ -315,7 +336,9 @@ Output validation must reject:
 - missing or duplicate profiles;
 - unsupported ratings;
 - confidence outside its bounds;
-- unknown evidence IDs;
+- unknown or unavailable metric IDs;
+- claims whose category is not supported by the cited metric policy;
+- Corporate Action claims without Corporate Action evidence;
 - model-generated canonical metric replacements;
 - personalized trade sizes or guaranteed-return language.
 

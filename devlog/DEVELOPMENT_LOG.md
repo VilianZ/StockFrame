@@ -408,4 +408,195 @@
 - **Decisions / blockers:** Filter hanya menolak aksi trading eksplisit atau klaim jaminan; istilah yang muncul dalam konteks disclaimer atau analisis fundamental netral dibiarkan. Tidak ada blocker; raw report dan credential tidak dicatat.
 - **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
   - [x] Filter bahasa dan regression test diperketat.
-  - [x] Tiga consecutive live test AAPL berhasil tanpa rejection `unsafe language`.
+- [x] Tiga consecutive live test AAPL berhasil tanpa rejection `unsafe language`.
+
+## Timestamp: 2026-08-06 19:41:16 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tambahkan Corporate Actions Business Quant sebagai extension terkontrol pada pipeline M2–M4 StockFrame, dengan parser event tervalidasi, enrichment yang tidak memblokir analisis utama, evidence bounded, dan dukungan response publik.
+- **TLDR AI agents done:** Menambahkan endpoint Corporate Actions sebagai call keenam uncached ticker, parser canonical kind dan raw action, filter ticker, bounded notes, deterministic deduplication, status `available/empty/unavailable`, stable evidence IDs, evidence packet maksimal 20 event, prompt event terstruktur, warning split tanpa mengubah historical prices, serta response snapshot yang dapat dipakai marker grafik.
+- **Milestone:** M2/M3/M4 — Corporate Actions enrichment
+- **Files changed:**
+  - `lib/domain/contracts.ts`, `lib/domain/schemas.ts`, `lib/domain/versions.ts`
+  - `lib/market-data/provider.ts`, `lib/market-data/business-quant.ts`, `lib/market-data/business-quant-parsers.ts`, `lib/market-data/normalizer.ts`
+  - `lib/quality/evidence-packet.ts`, `lib/metrics/calculations.ts`, `lib/ai/evidence-aliases.ts`, `lib/ai/prompt.ts`
+  - `tests/fixtures/business-quant/corporate-actions.json`
+  - `tests/unit/business-quant.test.ts`, `tests/unit/normalization.test.ts`, `tests/unit/evidence-packet.test.ts`, `tests/unit/metrics.test.ts`, `tests/unit/ai.test.ts`, `tests/unit/analyze-route.test.ts`
+  - `PRODUCT.md`, `docs/BACKEND_SPEC.md`, `docs/BACKEND_IMPLEMENTATION_PLAN.md`
+  - `checklists/M2_MARKET_DATA_AND_METRICS.md`, `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 85 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - Tidak ada live Business Quant atau Gemini call; seluruh test memakai fixture dan fake fetch/adapter.
+- **Decisions / blockers:** Corporate Actions adalah enrichment opsional; 429, timeout, 5xx setelah retry, atau payload tidak tersedia menghasilkan status unavailable dan warning aman tanpa menghentikan lima sumber utama. `notes` diperlakukan sebagai teks provider tidak tepercaya, bukan berita. Tidak ada blocker.
+- **Checklist:** `checklists/M2_MARKET_DATA_AND_METRICS.md`, `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+  - [x] Call keenam, parser, normalisasi, evidence bounded, prompt, warning split, public snapshot, fixture, dan regression test selesai.
+
+## Timestamp: 2026-08-06 20:17:15 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup gap review Corporate Actions dengan memastikan evidence event tidak terpotong, klaim corporate action wajib memiliki provenance, dan event setelah batas waktu snapshot tidak masuk ke analisis.
+- **TLDR AI agents done:** Evidence packet kini mencadangkan slot untuk evidence corporate action, schema Gemini dan report menyediakan `corporateActionClaims` ber-evidence, alias dipetakan kembali ke SHA canonical, prose bebas dari klaim event, dan normalizer menyaring event setelah `snapshot.asOf` dengan warning aman.
+- **Milestone:** M2/M3/M4 — Corporate Actions acceptance hardening
+- **Files changed:**
+  - `lib/quality/evidence-packet.ts`, `lib/domain/schemas.ts`, `lib/domain/contracts.ts`
+  - `lib/ai/gemini-schema.ts`, `lib/ai/evidence-aliases.ts`, `lib/ai/validation.ts`, `lib/ai/prompt.ts`
+  - `lib/market-data/normalizer.ts`
+  - `tests/unit/ai.test.ts`, `tests/unit/evidence-packet.test.ts`, `tests/unit/normalization.test.ts`, `tests/unit/analyze-route.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`, `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 89 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Corporate-action event hanya dapat disebut melalui `corporateActionClaims` dengan evidence event yang tersedia; event setelah `asOf` diabaikan dan diberi warning. Tidak ada blocker.
+- **Checklist:** `checklists/M2_MARKET_DATA_AND_METRICS.md`, `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+- [x] Gap truncation evidence, provenance klaim, dan temporal boundary selesai serta tervalidasi.
+
+## Timestamp: 2026-08-06 20:57:19 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki sisa gap Corporate Actions pada safety validation, enum evidence Gemini, deteksi prose yang terlalu luas, dan versioning prompt/report contract.
+- **TLDR AI agents done:** Safety validation kini mencakup teks claim tanpa mencampurkannya dengan pemeriksaan provenance, Gemini memakai enum khusus alias corporate action, deteksi event membutuhkan konteks, dan versi kontrak dinaikkan ke prompt `m3.ai-prompt.2` serta report `m0.report.2`.
+- **Milestone:** M3/M4 — Corporate Actions AI contract hardening
+- **Files changed:**
+  - `lib/ai/validation.ts`, `lib/ai/gemini-schema.ts`, `lib/ai/gemini.ts`, `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`, `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 90 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Kata umum seperti ticker, dividend, dan split tidak lagi otomatis memblokir prose tanpa konteks event. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+  - [x] Safety claim, enum evidence khusus corporate action, contextual event detection, dan contract versioning selesai serta tervalidasi.
+
+## Timestamp: 2026-08-07 07:29:28 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup dua edge case terakhir Corporate Actions: cegah claim saat tidak ada evidence dan jangan menolak prose status normal seperti perusahaan terdaftar atau dividend yield.
+- **TLDR AI agents done:** Schema Gemini kini menetapkan `corporateActionClaims.maxItems` menjadi 0 tanpa event, sementara pola deteksi event diperketat agar status listing dan istilah valuasi netral tetap lolos. Regression test ditambahkan.
+- **Milestone:** M3/M4 — Corporate Actions edge-case hardening
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`, `lib/ai/validation.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`, `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 91 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Packet tanpa corporate-action evidence tidak dapat menghasilkan claim melalui schema maupun validator; prose status normal tidak dianggap event. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Edge case empty evidence dan contextual prose selesai serta tervalidasi.
+
+## Timestamp: 2026-08-07 08:41:08 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Lanjutkan hardening backend StockFrame agar setiap respons Gemini memiliki grounding semantic granular berbasis metric ID, mematuhi kebijakan kategori, confidence rubric, dan provenance Corporate Action.
+- **TLDR AI agents done:** Report contract diubah menjadi claim `{ text, metricIds }`, schema Gemini dibatasi pada metric yang tersedia, metric policy dan validasi klaim eksternal ditambahkan, serta alias Corporate Action tetap dipisahkan dari grounding metric. Prompt, versioning, test, dokumentasi, dan consumer contract diperbarui.
+- **Milestone:** M3/M4 — Semantic grounding respons Gemini
+- **Files changed:**
+  - `lib/domain/schemas.ts`, `lib/domain/contracts.ts`, `lib/domain/versions.ts`
+  - `lib/ai/metric-policy.ts`, `lib/ai/gemini-schema.ts`, `lib/ai/gemini.ts`, `lib/ai/prompt.ts`, `lib/ai/validation.ts`, `lib/ai/evidence-aliases.ts`
+  - `tests/unit/ai.test.ts`, `tests/unit/analyze-route.test.ts`, `tests/unit/domain.test.ts`
+  - `docs/BACKEND_SPEC.md`, `docs/BACKEND_IMPLEMENTATION_PLAN.md`, `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 94 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Full re-index codebase-memory: selesai; tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Metric ID menjadi referensi utama untuk klaim biasa; evidence SHA/alias hanya digunakan untuk Corporate Action claim. Confidence absolut maksimum 0,85 dan degraded maksimum 0,70. Frontend belum diubah, tetapi harus membaca `text` dan `metricIds` pada claim report baru. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`, `checklists/M4_API_AND_RUNNER.md`
+  - [x] Semantic grounding, metric policy, confidence boundary, schema dynamic, regression test, dokumentasi, dan re-index selesai serta tervalidasi.
+
+## Timestamp: 2026-08-07 09:07:07 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup gap semantic grounding berupa validasi angka terhadap metric canonical, policy EPS, provenance Corporate Action pada grounded prose, dan false positive kata `shares`.
+- **TLDR AI agents done:** Validator kini membandingkan angka dengan nilai serta unit metric yang dikutip, menambahkan kelompok earnings untuk `eps_ttm`, memblokir istilah Corporate Action pada grounded claim dan mengizinkan disclosure di limitations, serta membatasi deteksi `shares` pada konteks ukuran posisi. Prompt, versi policy/AI, test, dan dokumentasi diperbarui.
+- **Milestone:** M3/M4 — Semantic grounding hardening lanjutan
+- **Files changed:**
+  - `lib/ai/metric-policy.ts`, `lib/ai/validation.ts`, `lib/ai/prompt.ts`, `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `docs/BACKEND_SPEC.md`, `docs/BACKEND_IMPLEMENTATION_PLAN.md`, `checklists/M3_AGENTS_AND_PROFILES.md`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 96 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Angka boleh ditulis model hanya jika cocok dengan metric canonical dalam toleransi pembulatan dan konversi persen ratio yang eksplisit. Istilah Corporate Action dipindahkan ke claim terstruktur atau limitations. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Numeric grounding, earnings policy, Corporate Action prose provenance, dan unsafe-language regression selesai serta tervalidasi.
+
+## Timestamp: 2026-08-08 10:55:13 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup edge case semantic grounding untuk angka natural Gemini yang memakai separator atau suffix skala, abaikan tahun/tanggal, dan blokir narasi `ticker_change` di grounded prose.
+- **TLDR AI agents done:** Parser numeric claim kini menormalisasi format ribuan/desimal, suffix `K/M/B/T` dan `ribu/juta/miliar`, mengabaikan tanggal serta tahun, dan validator mengenali variasi ticker change. Regression test, prompt, versioning, dokumentasi, dan checklist diperbarui.
+- **Milestone:** M3/M4 — Semantic grounding format dan Corporate Action hardening
+- **Files changed:**
+  - `lib/ai/metric-policy.ts`, `lib/ai/validation.ts`, `lib/ai/prompt.ts`, `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `docs/BACKEND_SPEC.md`, `docs/BACKEND_IMPLEMENTATION_PLAN.md`, `checklists/M3_AGENTS_AND_PROFILES.md`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 97 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Tahun dan tanggal tidak dianggap sebagai nilai metric; angka berskala harus eksplisit dan ekuivalen secara matematis. `ticker_change` hanya boleh muncul melalui claim Corporate Action terstruktur atau limitations. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Natural numeric format, date/year exclusion, ticker-change provenance, regression test, dan dokumentasi selesai serta tervalidasi.
+
+## Timestamp: 2026-08-08 11:07:41 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki parsing angka campuran agar format `1,000.50` dan `1.000,50` dipahami sebagai 1000,50 dan tambahkan regression test.
+- **TLDR AI agents done:** Parser kini mengenali separator terakhir sebagai desimal ketika bagian pecahannya 1–2 digit, tanpa merusak format ribuan penuh. Dua regression test format campuran ditambahkan.
+- **Milestone:** M3/M4 — Semantic grounding numeric parser hardening
+- **Files changed:**
+  - `lib/ai/metric-policy.ts`
+  - `tests/unit/ai.test.ts`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 98 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Separator campuran diperlakukan sebagai angka desimal hanya bila bagian terakhir memiliki 1–2 digit; tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Parsing separator ribuan/desimal campuran dan regression test selesai serta tervalidasi.
+
+## Timestamp: 2026-08-08 11:22:00 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki observability kegagalan HTTP Gemini agar telemetry server-side memuat identitas request, model, status, serta error provider yang telah disanitasi, tanpa membocorkan secret atau mengubah response publik.
+- **TLDR AI agents done:** Telemetry failure Gemini kini menyimpan status HTTP dan kode/pesan provider yang dibatasi serta disanitasi; logger route hanya menerima field aman. Regression test mencakup status 400, 401, 403, 429, 500, 503, redaksi secret, dan response client generik.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/contracts.ts`, `lib/ai/gemini.ts`, `app/api/analyze/route.ts`
+  - `tests/unit/ai.test.ts`, `tests/unit/analyze-route.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+- **Validation:**
+  - Test terfokus adapter Gemini dan route: Lulus, 38 test.
+  - Full lint, typecheck, test, build, dan `git diff --check`: akan dijalankan setelah perubahan dokumentasi ini.
+  - Tidak ada live provider call pada test.
+- **Decisions / blockers:** Error provider hanya diekstrak dari field code/status/message yang dipilih, dibatasi panjangnya, dan dirahasiakan dari client. Tidak ada blocker.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Safe failure telemetry Gemini dan regression test redaksi secret selesai.

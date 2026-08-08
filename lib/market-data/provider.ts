@@ -1,4 +1,4 @@
-import type { Instrument } from "../domain";
+import type { CorporateActionKind, Instrument } from "../domain";
 
 export const MARKET_DATA_ERROR_CODES = [
   "INVALID_KEY",
@@ -40,7 +40,8 @@ export interface MarketDataLogEvent {
     | "prices"
     | "income-statement"
     | "balance-sheet"
-    | "cash-flow";
+    | "cash-flow"
+    | "corporate-actions";
   attempt: number;
   status?: number;
   code?: MarketDataErrorCode;
@@ -91,6 +92,23 @@ export interface FinancialStatementRecord {
   raw: Record<string, unknown>;
 }
 
+export interface CorporateActionInput {
+  date: string;
+  ticker: string;
+  kind: CorporateActionKind;
+  rawAction: string;
+  value: number | null;
+  relatedTicker: string | null;
+  relatedName: string | null;
+  notes: string | null;
+}
+
+export interface CorporateActionEnrichmentInput {
+  status: "available" | "empty" | "unavailable";
+  events: CorporateActionInput[];
+  warnings: string[];
+}
+
 export interface RawMarketDataBundle {
   instrument: Instrument;
   quote: QuoteRecord;
@@ -99,6 +117,7 @@ export interface RawMarketDataBundle {
   incomeStatement: FinancialStatementRecord;
   balanceSheet: FinancialStatementRecord;
   cashFlow: FinancialStatementRecord;
+  corporateActions?: CorporateActionEnrichmentInput;
   warnings?: string[];
 }
 

@@ -16,3 +16,6 @@
 - [x] Test provider mencakup resolution/profile, nested parsing, EOD validation, timeout, 429, cache expiry, redaction, dan call count tanpa live API.
 - [x] Controlled live analysis AAPL berhasil end-to-end dengan Business Quant dan Gemini; status Gemini tercatat tanpa body respons.
 - [x] Tiga controlled live analysis AAPL berturut-turut berhasil HTTP 200 dengan report hadir dan tanpa rejection unsafe language.
+- [x] Public response `/api/analyze` mempertahankan Corporate Actions terstruktur di MarketSnapshot untuk marker grafik dengan enrichment unavailable yang eksplisit.
+- [x] Report contract versi baru tetap tervalidasi melalui route integration tests tanpa mengubah response flow atau melakukan live call.
+- [x] Public response membawa report claim granular dengan `text` dan `metricIds`; canonical metrics tetap menjadi sumber nilai dan frontend perlu membaca field baru tersebut.

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import {
   ERROR_CODES,
+  CORPORATE_ACTION_KINDS,
+  CORPORATE_ACTION_STATUSES,
   METRIC_STATUSES,
   QUALITY_FLAGS,
   RATINGS,
@@ -20,6 +22,8 @@ export const RatingSchema = z.enum(RATINGS);
 export const MetricStatusSchema = z.enum(METRIC_STATUSES);
 export const QualityFlagSchema = z.enum(QUALITY_FLAGS);
 export const ErrorCodeSchema = z.enum(ERROR_CODES);
+export const CorporateActionKindSchema = z.enum(CORPORATE_ACTION_KINDS);
+export const CorporateActionStatusSchema = z.enum(CORPORATE_ACTION_STATUSES);
 export const QualityDecisionSchema = z.enum([
   "insufficient",
   "degraded",
@@ -49,6 +53,24 @@ export const EvidenceSchema = z.strictObject({
   source: z.string().trim().min(1).max(100),
   effectiveDate: dateString,
   valueReference: z.string().trim().min(1).max(200),
+});
+
+export const CorporateActionSchema = z.strictObject({
+  date: dateString,
+  ticker: z.string().trim().min(1).max(20),
+  kind: CorporateActionKindSchema,
+  rawAction: z.string().trim().min(1).max(100),
+  value: finiteNumber.nullable(),
+  relatedTicker: z.string().trim().min(1).max(20).nullable(),
+  relatedName: z.string().trim().min(1).max(200).nullable(),
+  notes: z.string().trim().min(1).max(500).nullable(),
+  evidenceId: z.string().trim().min(1).max(100),
+});
+
+export const CorporateActionEnrichmentSchema = z.strictObject({
+  status: CorporateActionStatusSchema,
+  events: z.array(CorporateActionSchema).max(100),
+  warnings: z.array(z.string().trim().min(1).max(200)).max(20),
 });
 
 export const PricePointSchema = z.strictObject({
@@ -105,6 +127,11 @@ export const MarketSnapshotSchema = z.strictObject({
     balanceSheet: z.array(FinancialPeriodSchema),
     cashFlow: z.array(FinancialPeriodSchema),
   }),
+  corporateActions: CorporateActionEnrichmentSchema.default({
+    status: "unavailable",
+    events: [],
+    warnings: ["Corporate actions enrichment belum tersedia."],
+  }),
 });
 
 export const QualityAssessmentSchema = z.strictObject({
@@ -115,17 +142,32 @@ export const QualityAssessmentSchema = z.strictObject({
   notes: z.array(z.string().trim().min(1).max(300)),
 });
 
+const metricIds = z
+  .array(z.string().trim().min(1).max(100))
+  .min(1)
+  .max(16)
+  .refine((ids) => new Set(ids).size === ids.length, "Metric IDs must be unique");
+
+const metricClaimSchema = (maxTextLength: number) => z.strictObject({
+  text: z.string().trim().min(1).max(maxTextLength),
+  metricIds,
+});
+
+export const MetricClaimSchema = metricClaimSchema(2000);
+export const ShortMetricClaimSchema = metricClaimSchema(500);
+export const SummaryClaimSchema = metricClaimSchema(4000);
+
 export const ProfileRecommendationSchema = z.strictObject({
   profile: RiskProfileSchema,
   rating: RatingSchema,
-  confidence: finiteNumber.min(0).max(1),
-  thesis: z.string().trim().min(1).max(2000),
-  considerations: z.array(z.string().trim().min(1).max(500)),
-  evidenceIds: z
-    .array(z.string().trim().min(1).max(100))
-    .min(1)
-    .max(64)
-    .refine((ids) => new Set(ids).size === ids.length, "Evidence IDs must be unique"),
+  confidence: finiteNumber.min(0.4).max(0.85),
+  thesis: MetricClaimSchema,
+  considerations: z.array(ShortMetricClaimSchema).min(1).max(16),
+});
+
+export const CorporateActionClaimSchema = z.strictObject({
+  evidenceId: z.string().trim().min(1).max(100),
+  claim: z.string().trim().min(1).max(500),
 });
 
 const profilesSchema = z.strictObject({
@@ -137,11 +179,12 @@ const profilesSchema = z.strictObject({
 export const FinalReportSchema = z
   .strictObject({
     schemaVersion: z.literal(REPORT_SCHEMA_VERSION),
-    summary: z.string().trim().min(1).max(4000),
-    strengths: z.array(z.string().trim().min(1).max(500)),
-    risks: z.array(z.string().trim().min(1).max(500)),
-    uncertainties: z.array(z.string().trim().min(1).max(500)),
+    summary: SummaryClaimSchema,
+    strengths: z.array(ShortMetricClaimSchema).min(1).max(16),
+    risks: z.array(ShortMetricClaimSchema).min(1).max(16),
+    uncertainties: z.array(ShortMetricClaimSchema).min(1).max(16),
     limitations: z.array(z.string().trim().min(1).max(500)),
+    corporateActionClaims: z.array(CorporateActionClaimSchema).max(20).default([]),
     profiles: profilesSchema,
     disclaimer: z.string().trim().min(1).max(1000),
   })

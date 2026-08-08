@@ -3,6 +3,7 @@ import { sha256Hex } from "../domain/hashing";
 import { canonicalSerialize } from "../domain/serialization";
 import { MARKET_SNAPSHOT_VERSION } from "../domain/versions";
 import type {
+  CorporateActionEnrichmentInput,
   FinancialStatementRecord,
   RawMarketDataBundle,
 } from "./provider";
@@ -184,6 +185,30 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
     normalizeStatement(bundle.balanceSheet, "balanceSheet", BALANCE_FIELDS, asOf, bundle.instrument.symbol),
     normalizeStatement(bundle.cashFlow, "cashFlow", CASH_FLOW_FIELDS, asOf, bundle.instrument.symbol),
   ]);
+  const corporateActionInput: CorporateActionEnrichmentInput = bundle.corporateActions ?? {
+    status: "unavailable",
+    events: [],
+    warnings: ["Corporate actions enrichment belum tersedia."],
+  };
+  const futureCorporateActionCount = corporateActionInput.events.filter((event) => event.date > asOf).length;
+  const eligibleCorporateActions = corporateActionInput.events.filter((event) => event.date <= asOf);
+  const corporateActionWarnings = futureCorporateActionCount > 0
+    ? [...corporateActionInput.warnings, "Corporate action setelah tanggal snapshot diabaikan."]
+    : corporateActionInput.warnings;
+  const corporateActionEvents = await Promise.all(eligibleCorporateActions.map(async (event) => ({
+    ...event,
+    evidenceId: await sha256Hex({
+      symbol: event.ticker,
+      source: "market-data.corporate-action",
+      date: event.date,
+      kind: event.kind,
+      rawAction: event.rawAction,
+      value: event.value,
+      relatedTicker: event.relatedTicker,
+      relatedName: event.relatedName,
+      notes: event.notes,
+    }),
+  })));
 
   const facts = Object.fromEntries(
     [
@@ -222,6 +247,12 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
         valueReference: `${kind}.${row.periodType}`,
       })),
     ),
+    ...corporateActionEvents.map((event) => ({
+      id: event.evidenceId,
+      source: "market-data.corporate-action",
+      effectiveDate: event.date,
+      valueReference: `corporate-action.${event.kind}`,
+    })),
   ];
 
   const snapshot = MarketSnapshotSchema.parse({
@@ -234,6 +265,13 @@ export async function normalizeMarketData(bundle: RawMarketDataBundle): Promise<
     evidence,
     prices,
     financials: { income, balanceSheet, cashFlow },
+    corporateActions: {
+      status: corporateActionInput.status === "available" && corporateActionEvents.length === 0
+        ? "empty"
+        : corporateActionInput.status,
+      events: corporateActionEvents,
+      warnings: corporateActionWarnings,
+    },
   });
   return deepFreeze(snapshot);
 }

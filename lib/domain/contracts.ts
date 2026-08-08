@@ -4,16 +4,22 @@ import type {
   AnalysisRequestSchema,
   AnalyzeErrorResponseSchema,
   AnalyzeResponseSchema,
+  CorporateActionEnrichmentSchema,
+  CorporateActionClaimSchema,
+  CorporateActionSchema,
   EvidenceSchema,
   FinalReportSchema,
   FinancialPeriodSchema,
   InstrumentSchema,
   MarketSnapshotSchema,
+  MetricClaimSchema,
   MetricSchema,
   PricePointSchema,
   ProfileRecommendationSchema,
   QualityAssessmentSchema,
   QualityDecisionSchema,
+  ShortMetricClaimSchema,
+  SummaryClaimSchema,
 } from "./schemas";
 
 export const RISK_PROFILES = [
@@ -44,6 +50,23 @@ export const QUALITY_FLAGS = [
 ] as const;
 export type QualityFlag = (typeof QUALITY_FLAGS)[number];
 
+export const CORPORATE_ACTION_KINDS = [
+  "dividend",
+  "split",
+  "merger",
+  "acquisition",
+  "spinoff",
+  "bankruptcy",
+  "delisting",
+  "listing",
+  "ticker_change",
+  "other",
+] as const;
+export type CorporateActionKind = (typeof CORPORATE_ACTION_KINDS)[number];
+
+export const CORPORATE_ACTION_STATUSES = ["available", "empty", "unavailable"] as const;
+export type CorporateActionStatus = (typeof CORPORATE_ACTION_STATUSES)[number];
+
 export const ERROR_CODES = [
   "INVALID_REQUEST",
   "INSTRUMENT_NOT_FOUND",
@@ -65,6 +88,12 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 export type AnalysisRequest = z.infer<typeof AnalysisRequestSchema>;
 export type Instrument = z.infer<typeof InstrumentSchema>;
 export type Evidence = z.infer<typeof EvidenceSchema>;
+export type CorporateAction = z.infer<typeof CorporateActionSchema>;
+export type CorporateActionEnrichment = z.infer<typeof CorporateActionEnrichmentSchema>;
+export type CorporateActionClaim = z.infer<typeof CorporateActionClaimSchema>;
+export type MetricClaim = z.infer<typeof MetricClaimSchema>;
+export type ShortMetricClaim = z.infer<typeof ShortMetricClaimSchema>;
+export type SummaryClaim = z.infer<typeof SummaryClaimSchema>;
 export type Metric = z.infer<typeof MetricSchema>;
 export type MarketSnapshot = z.infer<typeof MarketSnapshotSchema>;
 export type FinancialPeriod = z.infer<typeof FinancialPeriodSchema>;
