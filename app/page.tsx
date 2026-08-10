@@ -1,7 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { AnimatePresence, MotionConfig, motion } from "motion/react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
+import { Line, LineChart } from "@/components/charts/line-chart";
+import { PriceScale } from "@/components/charts/price-axis";
+import { ChartTooltip } from "@/components/charts/tooltip";
+import { XAxis } from "@/components/charts/x-axis";
 
 type TabId = "summary" | "history" | "metrics" | "actions" | "ai" | "evidence";
 type ProfileId = "conservative" | "moderate" | "aggressive";
@@ -137,28 +142,45 @@ function formatMetric(value: number | null, unit: string, id?: string) {
   return `$${value.toLocaleString("id-ID", { maximumFractionDigits: 1 })}`;
 }
 
+function sortPrices(prices: readonly PricePoint[]) {
+  return [...prices].sort((left, right) => left.date.localeCompare(right.date));
+}
+
 function claimText(value: Claim | string | undefined) {
   return typeof value === "string" ? value : value?.text ?? "Belum tersedia.";
 }
 
-function Chart({ prices, large = false }: { prices: PricePoint[]; large?: boolean }) {
-  const width = 900;
-  const height = large ? 290 : 210;
-  const values = prices.length ? prices.map((point) => point.close) : [0];
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1;
-  const points = values.map((value, index) => `${(index / Math.max(values.length - 1, 1)) * width},${height - ((value - min) / range) * (height - 28) - 14}`).join(" ");
-  return (
-    <div className={`chart-wrap ${large ? "chart-wrap-large" : ""}`}>
-      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" role="img" aria-label="Grafik riwayat harga">
-        {[0.2, 0.45, 0.7, 0.95].map((position) => <line key={position} x1="0" x2={width} y1={height * position} y2={height * position} className="chart-grid" />)}
-        <polyline points={points} className="chart-line" />
-        <polyline points={`0,${height - 14} ${points}`} className="chart-area" />
-      </svg>
-      <div className="chart-axis"><span>12 bulan lalu</span><span>6 bulan</span><span>Terbaru</span></div>
-    </div>
-  );
+function Chart({ prices, large = false, currency = "USD" }: { prices: PricePoint[]; large?: boolean; currency?: string }) {
+  if (prices.length === 0) {
+    return <div className={`chart-wrap ${large ? "chart-wrap-large" : ""} chart-empty`} role="img" aria-label="Data harga historis belum tersedia">Data harga historis belum tersedia.</div>;
+  }
+
+  const sortedPrices = sortPrices(prices);
+  const chartData = sortedPrices.map((point) => ({ date: new Date(`${point.date}T00:00:00`), close: point.close }));
+  const priceValues = sortedPrices.map((point) => point.close).filter((value) => Number.isFinite(value));
+  const minPrice = Math.min(...priceValues);
+  const maxPrice = Math.max(...priceValues);
+  const pricePadding = Math.max((maxPrice - minPrice) * 0.08, 1);
+  const priceDomain: [number, number] = minPrice === maxPrice
+    ? [minPrice - 1, maxPrice + 1]
+    : [minPrice - pricePadding, maxPrice + pricePadding];
+  const formatPrice = (value: unknown) => typeof value === "number"
+    ? new Intl.NumberFormat("id-ID", { style: "currency", currency, maximumFractionDigits: 2 }).format(value)
+    : "—";
+
+  return <div className={`chart-wrap ${large ? "chart-wrap-large" : ""}`} role="img" aria-label={`Grafik harga penutupan dengan ${sortedPrices.length} titik data`}>
+      <LineChart data={chartData} xDataKey="date" yScaleDomain={priceDomain} aspectRatio="" style={{ height: "100%" }} animationDuration={900} className="bklit-price-chart">
+        <XAxis numTicks={large ? 6 : 4} />
+        <Line dataKey="close" stroke="var(--sf-lime)" strokeWidth={3} fadeEdges={false} showHighlight={false} animate />
+        <PriceScale currency={currency} tickCount={large ? 5 : 4} />
+      <ChartTooltip
+        indicatorColor="var(--sf-lime)"
+        dotColor="var(--sf-lime)"
+        rows={(point) => [{ color: "var(--sf-lime)", label: "Harga penutupan", value: formatPrice(point.close) }]}
+        panelStyle={{ border: "1px solid var(--sf-line)", background: "rgba(12, 16, 15, .94)", color: "var(--sf-ink)" }}
+      />
+    </LineChart>
+  </div>;
 }
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
@@ -183,8 +205,50 @@ function EmptyWorkspace({ query, setQuery, onSubmit, error }: { query: string; s
   </main>;
 }
 
+const LOADING_STAGES = [
+  { key: "data", number: "01", label: "Menarik data Business Quant", detail: "Harga, laporan keuangan, dan aksi korporasi." },
+  { key: "engine", number: "02", label: "Menghitung metrik", detail: "Rasio, tren, kualitas data, dan evidence." },
+  { key: "ai", number: "03", label: "Menyusun interpretasi AI", detail: "Tiga perspektif risiko dari dataset yang sama." },
+] as const;
+
 function LoadingWorkspace({ ticker }: { ticker: string }) {
-  return <main className="loading-workspace"><div className="loading-orbit"><Icon name="spark" size={32} /></div><span className="eyebrow">MEMBANGUN LEMBAR RISET</span><h1>Mengurai {ticker.toUpperCase()}</h1><p>Data pasar dan laporan keuangan sedang disusun menjadi konteks yang bisa dibaca.</p><div className="loading-steps"><div className="loading-step active"><span>01</span><div><strong>Menarik data Business Quant</strong><small>Harga, laporan keuangan, aksi korporasi</small></div><i /></div><div className="loading-step active"><span>02</span><div><strong>Menghitung metrik</strong><small>Rasio, tren, dan kualitas data</small></div><i /></div><div className="loading-step"><span>03</span><div><strong>Menyusun interpretasi AI</strong><small>Tiga perspektif risiko yang terpisah</small></div><i /></div></div></main>;
+  const [stageIndex, setStageIndex] = useState(0);
+  const stage = LOADING_STAGES[stageIndex];
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setStageIndex((current) => Math.min(current + 1, LOADING_STAGES.length - 1));
+    }, 2200);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return <MotionConfig reducedMotion="user" transition={{ duration: 0.35, ease: "easeOut" }}>
+    <main className="loading-workspace" aria-label="Analisis sedang diproses">
+      <motion.div className="loading-orbit" animate={{ rotate: 360 }} transition={{ duration: 7, repeat: Infinity, ease: "linear" }} aria-hidden="true">
+        <motion.div className="loading-orbit__core" animate={{ scale: [1, 1.12, 1], opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}>
+          <Icon name="spark" size={32} />
+        </motion.div>
+      </motion.div>
+      <span className="eyebrow">MEMBANGUN LEMBAR RISET</span>
+      <h1>Mengurai {ticker.toUpperCase()}</h1>
+      <div className="loading-stage-copy" role="status" aria-live="polite" aria-atomic="true">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div key={stage.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+            <strong>{stage.label}</strong>
+            <p>{stage.detail}</p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="loading-progress" aria-hidden="true"><motion.span animate={{ scaleX: (stageIndex + 1) / LOADING_STAGES.length }} /></div>
+      <div className="loading-steps">
+        {LOADING_STAGES.map((item, index) => <motion.div className={`loading-step${index <= stageIndex ? " active" : ""}${index === stageIndex ? " current" : ""}`} key={item.key} animate={{ opacity: index <= stageIndex ? 1 : 0.42 }}>
+          <span>{item.number}</span>
+          <div><strong>{item.label}</strong><small>{item.detail}</small></div>
+          <motion.i animate={index === stageIndex ? { scale: [1, 1.35, 1] } : { scale: 1 }} transition={{ duration: 1.2, repeat: index === stageIndex ? Infinity : 0, ease: "easeInOut" }} />
+        </motion.div>)}
+      </div>
+    </main>
+  </MotionConfig>;
 }
 
 export default function HomePage() {
@@ -240,7 +304,7 @@ export default function HomePage() {
     <aside className="sidebar"><div className="sidebar-label">LAPORAN</div><nav className="side-nav" aria-label="Navigasi laporan">{TAB_ITEMS.map((item) => <button key={item.id} className={activeTab === item.id ? "active" : ""} onClick={() => setActiveTab(item.id)}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav><div className="sidebar-bottom"><p>{viewData.report.disclaimer}</p><span className="sidebar-rule" /> <small>DATA SEBAGAI KONTEKS<br />KEPUTUSAN TETAP DI TANGAN ANDA.</small></div></aside>
     <section className="main-column">
       <main className="report-content">
-        <div className="instrument-row"><div className="company-mark">{instrument.symbol === "AAPL" ? <span className="company-glyph" aria-label="Apple" /> : instrument.symbol.slice(0, 1)}</div><div className="instrument-name"><div><strong>{instrument.symbol}</strong><span>{instrument.name}</span></div><small>{instrument.exchange} · {instrument.region} · {instrument.currency}</small></div><div className="quality-chip"><span>Kualitas data</span><strong>{Math.round(viewData.quality.score)}%</strong></div><div className="report-heading"><span className="eyebrow">LEMBAR RISET</span><h1>{TAB_ITEMS.find((item) => item.id === activeTab)?.label}</h1></div><div className="profile-switcher" role="tablist" aria-label="Profil risiko">{(Object.keys(PROFILE_LABELS) as ProfileId[]).map((id) => <button key={id} className={activeProfile === id ? "active" : ""} onClick={() => setActiveProfile(id)} role="tab" aria-selected={activeProfile === id}>{PROFILE_LABELS[id]}</button>)}</div><button className="outline-button download-button" onClick={downloadReport}><Icon name="download" size={16} />Unduh</button></div>
+        <div className="instrument-row"><div className="instrument-name"><div><strong>{instrument.symbol}</strong><span>{instrument.name}</span></div><small>{instrument.exchange} · {instrument.region} · {instrument.currency}</small></div><div className="quality-chip"><span>Kualitas data</span><strong>{Math.round(viewData.quality.score)}%</strong></div><div className="report-heading"><span className="eyebrow">LEMBAR RISET</span><h1>{TAB_ITEMS.find((item) => item.id === activeTab)?.label}</h1></div><div className="profile-switcher" role="tablist" aria-label="Profil risiko">{(Object.keys(PROFILE_LABELS) as ProfileId[]).map((id) => <button key={id} className={activeProfile === id ? "active" : ""} onClick={() => setActiveProfile(id)} role="tab" aria-selected={activeProfile === id}>{PROFILE_LABELS[id]}</button>)}</div><button className="outline-button download-button" onClick={downloadReport}><Icon name="download" size={16} />Unduh</button></div>
         <div className="mobile-tabs">{TAB_ITEMS.map((item) => <button key={item.id} className={activeTab === item.id ? "active" : ""} onClick={() => setActiveTab(item.id)}>{item.label}</button>)}</div>
         {activeTab === "summary" && <SummaryView data={viewData} metric={metric} activeProfile={activeProfile} profile={profile} qualitySegments={qualitySegments} onTab={setActiveTab} />}
         {activeTab === "history" && <HistoryView data={viewData} />}
@@ -261,7 +325,7 @@ function SummaryView({ data, metric, activeProfile, profile, qualitySegments, on
 }
 
 function HistoryView({ data }: { data: AppData }) {
-  const first = data.snapshot.prices[0]?.close ?? null; const last = data.snapshot.prices[data.snapshot.prices.length - 1]?.close ?? null; const change = first && last ? ((last - first) / first) * 100 : 0;
+  const sortedPrices = sortPrices(data.snapshot.prices); const first = sortedPrices[0]?.close ?? null; const last = sortedPrices.at(-1)?.close ?? null; const change = first && last ? ((last - first) / first) * 100 : 0;
   return <div className="tab-content history-content"><div className="tab-intro"><div><span className="eyebrow">PRICE LEDGER · 12 BULAN</span><h2>Pergerakan harga dalam konteks.</h2><p>Baca ritme harga bersama rentang waktu dan titik data yang menjadi dasar chart.</p></div><div className="intro-stat"><span>Perubahan periode</span><strong className={change >= 0 ? "positive" : "negative"}>{change >= 0 ? "+" : ""}{change.toFixed(1)}%</strong></div></div><section className="panel large-chart-panel"><SectionTitle title="Riwayat harga penutupan" action={`${data.snapshot.prices.length} titik data`} /><Chart prices={data.snapshot.prices} large /><div className="chart-foot"><span><i className="legend-line" />Harga penutupan</span><span>Terendah {first ? `$${Math.min(...data.snapshot.prices.map((point) => point.close)).toFixed(2)}` : "—"}</span><span>Tertinggi {last ? `$${Math.max(...data.snapshot.prices.map((point) => point.close)).toFixed(2)}` : "—"}</span></div></section><div className="two-column"><section className="panel"><SectionTitle title="Snapshot harga" /><div className="big-number">{data.snapshot.price ? `$${data.snapshot.price.toFixed(2)}` : "—"}<small>Harga terakhir · {formatDate(data.snapshot.asOf)}</small></div><div className="mini-stats"><Stat label="Awal periode" value={first ? `$${first.toFixed(2)}` : "—"} /><Stat label="Median" value={data.snapshot.prices.length ? `$${(data.snapshot.prices.map((point) => point.close).sort((a, b) => a - b)[Math.floor(data.snapshot.prices.length / 2)]).toFixed(2)}` : "—"} /><Stat label="Akhir periode" value={last ? `$${last.toFixed(2)}` : "—"} /></div></section><section className="panel"><SectionTitle title="Cara membaca" /><div className="note-list"><div><span>01</span><p>Tren harga bukan pengganti analisis fundamental.</p></div><div><span>02</span><p>Perubahan periode dihitung dari titik yang tersedia.</p></div><div><span>03</span><p>Gunakan chart sebagai konteks volatilitas.</p></div></div></section></div><Disclaimer text="Harga historis bukan jaminan hasil di masa depan." /></div>;
 }
 

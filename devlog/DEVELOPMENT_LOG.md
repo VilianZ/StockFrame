@@ -1,3 +1,53 @@
+# StockFrame — Planning Backend dan Frontend
+
+## Timestamp: 2026-08-05 16:42:10 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Menyusun fondasi backend StockFrame agar kontrak domain, sumber data, metric engine, quality gate, evidence, dan error handling memiliki batas yang jelas.
+- **TLDR AI agents done:** Menyepakati backend sebagai sumber kebenaran untuk data canonical, perhitungan deterministik, provenance, dan response publik; AI hanya menjadi lapisan interpretasi.
+- **Milestone:** Planning Backend — Fondasi dan kontrak
+- **Files changed:** Tidak ada; sesi planning.
+- **Validation:** Review kontrak dan batas scope secara konseptual.
+- **Decisions / blockers:** Provider detail, credential, dan raw payload tetap server-only; tidak ada live provider call pada tahap planning.
+
+## Timestamp: 2026-08-05 17:05:26 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Mematangkan rencana backend untuk Business Quant, metric TTM, quality gate, corporate actions, cache, timeout, retry, evidence packet, dan typed error.
+- **TLDR AI agents done:** Menetapkan alur resolution → market data → normalizer → metric engine → quality gate → evidence → Gemini → FinalReport, termasuk batas call provider dan enrichment yang tidak memblokir analisis utama.
+- **Milestone:** Planning Backend — Market data, engine, dan API runner
+- **Files changed:** Tidak ada; sesi planning.
+- **Validation:** Pemeriksaan konsistensi alur dan acceptance boundary.
+- **Decisions / blockers:** Formula metric dan quality gate tidak boleh diubah oleh AI; provider failure harus tetap typed dan aman untuk client.
+
+## Timestamp: 2026-08-05 17:20:18 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Menyusun arah frontend StockFrame dari identitas visual sampai pengalaman membaca data, engine, dan interpretasi AI.
+- **TLDR AI agents done:** Menetapkan Black Frame / Lime Signal, alur Data → Engine → Interpretasi, responsive behavior, focus state, reduced motion, loading, empty state, dan custom scrollbar sebagai fondasi F0–F1.
+- **Milestone:** Planning Frontend — Identitas dan pengantar
+- **Files changed:** Tidak ada; sesi planning.
+- **Validation:** Review hierarchy, provenance, accessibility, dan copy produk.
+- **Decisions / blockers:** Angka ilustratif harus jujur; landing tidak boleh menyerupai terminal trading atau menjanjikan prediksi harga.
+
+## Timestamp: 2026-08-05 17:24:44 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Menyusun rencana frontend F2–F3 untuk form riset, lifecycle request, report renderer, chart harga, metric, corporate actions, evidence, dan tiga profile risiko.
+- **TLDR AI agents done:** Menetapkan F2 sebagai controlled query dan request lifecycle, sedangkan F3 sebagai renderer report yang membaca response backend tanpa menghitung ulang atau mengarang data.
+- **Milestone:** Planning Frontend — Research desk dan report renderer
+- **Files changed:** Tidak ada; sesi planning.
+- **Validation:** Review acceptance path desktop/mobile, interaction states, tooltip chart, unit compatibility, dan provenance.
+- **Decisions / blockers:** Chart hanya memakai closing price EOD; domain sumbu, grid, label, tanggal, dan tooltip harus mengikuti dataset yang sama.
+
+## Prinsip lintas lapisan
+
+- Tidak ada live provider call dalam unit test.
+- Credential, raw provider payload, prompt penuh, dan response sensitif tidak boleh masuk client maupun log.
+- Milestone ditutup setelah implementasi, regression test, lint, typecheck, test, build, dan review visual yang relevan selesai.
+
+---
+
 ## Timestamp: 2026-08-05 17:33:47 WIB
 
 - **Model used:** GPT5.6 Luna High
@@ -258,7 +308,7 @@
 
 ## Timestamp: 2026-08-06 12:31:32 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Migrasikan provider market-data dari Alpha Vantage ke Business Quant tanpa mengubah public API, formula metrics, quality gate, pipeline Gemini, atau frontend; gunakan parser tervalidasi, cache, batas call, error handling, dan fixture tanpa live API.
 - **TLDR AI agents done:** Menambahkan `BusinessQuantProvider` dengan universe equity cache 24 jam, profile, IS/BS/CF quarterly paralel, harga EOD tervalidasi, nested slug mapping berbasis `reportedValue.raw`, deduplikasi OHLC aman, TTL cache bounded, retry transient sekali tanpa retry 429, serta menghapus runtime dan fixture Alpha Vantage setelah test Business Quant lulus.
 - **Milestone:** M2/M4 — Market data migration dan API runner
@@ -280,7 +330,7 @@
 
 ## Timestamp: 2026-08-06 12:54:29 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perketat migrasi Business Quant dengan menolak nilai finansial null atau blank, memverifikasi identitas ticker dan jenis statement, melengkapi regression test adapter, membersihkan proposal dari Alpha Vantage, lalu menyiapkan controlled live test AAPL.
 - **TLDR AI agents done:** Parser kini menolak `null`, `undefined`, string kosong, dan whitespace sebelum konversi angka; provider memvalidasi `metadata.ticker`, `metadata.statement`, serta profile equity. Test ditambah untuk API key hilang, HTTP 401/403/404/500, retry tunggal, invalid JSON, raw value kosong, mismatch metadata, dan profile non-equity. Proposal diperbarui ke Business Quant.
 - **Milestone:** M2/M4 — Hardening provider Business Quant dan dokumentasi migrasi
@@ -301,7 +351,7 @@
 
 ## Timestamp: 2026-08-06 13:34:26 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki parser universe Business Quant agar row equity yang tidak lengkap tidak menggagalkan pencarian AAPL, tambahkan regression test, lalu ulangi validasi lokal dan controlled live test.
 - **TLDR AI agents done:** Parser memvalidasi struktur utama universe, melewati row equity tanpa ticker, nama, atau exchange, tetap menolak universe tanpa kandidat valid, dan mempertahankan kandidat AAPL yang valid. Fixture serta test campuran row valid dan exchange kosong ditambahkan.
 - **Milestone:** M2/M4 — Hardening parser universe dan verifikasi live
@@ -323,7 +373,7 @@
 
 ## Timestamp: 2026-08-06 13:46:32 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tangani duplicate EOD Business Quant dengan aturan aman untuk record identik dan konflik close, tetap tolak konflik open/high/low, tambahkan regression test, lalu verifikasi ulang alur AAPL.
 - **TLDR AI agents done:** Parser memilih volume terbesar untuk duplicate OHLC identik dan konflik close terbatas ketika open/high/low sama, menambahkan warning, serta tetap menolak konflik OHLC utama. Test mencakup ketiga kondisi tersebut.
 - **Milestone:** M2/M4 — Hardening EOD parser dan verifikasi live
@@ -345,7 +395,7 @@
 
 ## Timestamp: 2026-08-06 14:02:47 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tambahkan logging server-side yang hanya mencatat kategori kegagalan validasi output Gemini, gunakan hasil diagnosis live untuk memperketat evidence IDs dan batas schema, lalu ulangi validasi dan controlled test AAPL.
 - **TLDR AI agents done:** Validator kini mengklasifikasikan kegagalan sebagai `contract mismatch`, `unknown evidence`, `unsafe language`, atau `confidence violation`. Route Gemini mencatat request ID dan kategori tanpa raw output. Prompt dan structured schema Gemini sekarang mengirim daftar evidence ID packet yang valid serta batas confidence dan jumlah evidence yang selaras dengan kontrak final.
 - **Milestone:** M3/M4 — Diagnosis validator output dan hardening Gemini schema
@@ -368,7 +418,7 @@
 
 ## Timestamp: 2026-08-06 14:12:07 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ganti enum canonical SHA evidence yang terlalu besar dengan alias pendek, kirim alias ke Gemini, map kembali ke canonical ID sebelum validasi final, pin profile schema, dan log status HTTP Gemini secara aman.
 - **TLDR AI agents done:** Menambahkan alias evidence deterministik `E1`, `E2`, dan seterusnya pada packet AI; hasil model dipetakan kembali ke SHA canonical sebelum `validateModelReport`. Schema Gemini kini memakai enum alias pendek dan profile enum spesifik per cabang. Status HTTP Gemini dicatat tanpa body respons.
 - **Milestone:** M3/M4 — Optimasi structured output Gemini dan acceptance live
@@ -389,7 +439,7 @@
 
 ## Timestamp: 2026-08-06 14:25:02 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Persempit filter unsafe language agar frasa disclaimer dan istilah fundamental netral tidak ditolak secara keliru, lalu pastikan pipeline stabil melalui beberapa live test AAPL berturut-turut.
 - **TLDR AI agents done:** Mengganti deteksi kata trading yang terlalu luas menjadi deteksi frasa aksi eksplisit, mempertahankan penolakan instruksi trading langsung, dan menambahkan regression test untuk kalimat netral seperti disclaimer, alokasi modal, serta daya tahan bisnis.
 - **Milestone:** M3/M4 — Hardening validator dan stabilisasi live pipeline
@@ -412,7 +462,7 @@
 
 ## Timestamp: 2026-08-06 19:41:16 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tambahkan Corporate Actions Business Quant sebagai extension terkontrol pada pipeline M2–M4 StockFrame, dengan parser event tervalidasi, enrichment yang tidak memblokir analisis utama, evidence bounded, dan dukungan response publik.
 - **TLDR AI agents done:** Menambahkan endpoint Corporate Actions sebagai call keenam uncached ticker, parser canonical kind dan raw action, filter ticker, bounded notes, deterministic deduplication, status `available/empty/unavailable`, stable evidence IDs, evidence packet maksimal 20 event, prompt event terstruktur, warning split tanpa mengubah historical prices, serta response snapshot yang dapat dipakai marker grafik.
 - **Milestone:** M2/M3/M4 — Corporate Actions enrichment
@@ -436,7 +486,7 @@
 
 ## Timestamp: 2026-08-06 20:17:15 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup gap review Corporate Actions dengan memastikan evidence event tidak terpotong, klaim corporate action wajib memiliki provenance, dan event setelah batas waktu snapshot tidak masuk ke analisis.
 - **TLDR AI agents done:** Evidence packet kini mencadangkan slot untuk evidence corporate action, schema Gemini dan report menyediakan `corporateActionClaims` ber-evidence, alias dipetakan kembali ke SHA canonical, prose bebas dari klaim event, dan normalizer menyaring event setelah `snapshot.asOf` dengan warning aman.
 - **Milestone:** M2/M3/M4 — Corporate Actions acceptance hardening
@@ -459,7 +509,7 @@
 
 ## Timestamp: 2026-08-06 20:57:19 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki sisa gap Corporate Actions pada safety validation, enum evidence Gemini, deteksi prose yang terlalu luas, dan versioning prompt/report contract.
 - **TLDR AI agents done:** Safety validation kini mencakup teks claim tanpa mencampurkannya dengan pemeriksaan provenance, Gemini memakai enum khusus alias corporate action, deteksi event membutuhkan konteks, dan versi kontrak dinaikkan ke prompt `m3.ai-prompt.2` serta report `m0.report.2`.
 - **Milestone:** M3/M4 — Corporate Actions AI contract hardening
@@ -480,7 +530,7 @@
 
 ## Timestamp: 2026-08-07 07:29:28 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup dua edge case terakhir Corporate Actions: cegah claim saat tidak ada evidence dan jangan menolak prose status normal seperti perusahaan terdaftar atau dividend yield.
 - **TLDR AI agents done:** Schema Gemini kini menetapkan `corporateActionClaims.maxItems` menjadi 0 tanpa event, sementara pola deteksi event diperketat agar status listing dan istilah valuasi netral tetap lolos. Regression test ditambahkan.
 - **Milestone:** M3/M4 — Corporate Actions edge-case hardening
@@ -501,7 +551,7 @@
 
 ## Timestamp: 2026-08-07 08:41:08 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Lanjutkan hardening backend StockFrame agar setiap respons Gemini memiliki grounding semantic granular berbasis metric ID, mematuhi kebijakan kategori, confidence rubric, dan provenance Corporate Action.
 - **TLDR AI agents done:** Report contract diubah menjadi claim `{ text, metricIds }`, schema Gemini dibatasi pada metric yang tersedia, metric policy dan validasi klaim eksternal ditambahkan, serta alias Corporate Action tetap dipisahkan dari grounding metric. Prompt, versioning, test, dokumentasi, dan consumer contract diperbarui.
 - **Milestone:** M3/M4 — Semantic grounding respons Gemini
@@ -523,7 +573,7 @@
 
 ## Timestamp: 2026-08-07 09:07:07 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup gap semantic grounding berupa validasi angka terhadap metric canonical, policy EPS, provenance Corporate Action pada grounded prose, dan false positive kata `shares`.
 - **TLDR AI agents done:** Validator kini membandingkan angka dengan nilai serta unit metric yang dikutip, menambahkan kelompok earnings untuk `eps_ttm`, memblokir istilah Corporate Action pada grounded claim dan mengizinkan disclosure di limitations, serta membatasi deteksi `shares` pada konteks ukuran posisi. Prompt, versi policy/AI, test, dan dokumentasi diperbarui.
 - **Milestone:** M3/M4 — Semantic grounding hardening lanjutan
@@ -544,7 +594,7 @@
 
 ## Timestamp: 2026-08-08 10:55:13 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup edge case semantic grounding untuk angka natural Gemini yang memakai separator atau suffix skala, abaikan tahun/tanggal, dan blokir narasi `ticker_change` di grounded prose.
 - **TLDR AI agents done:** Parser numeric claim kini menormalisasi format ribuan/desimal, suffix `K/M/B/T` dan `ribu/juta/miliar`, mengabaikan tanggal serta tahun, dan validator mengenali variasi ticker change. Regression test, prompt, versioning, dokumentasi, dan checklist diperbarui.
 - **Milestone:** M3/M4 — Semantic grounding format dan Corporate Action hardening
@@ -565,7 +615,7 @@
 
 ## Timestamp: 2026-08-08 11:07:41 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki parsing angka campuran agar format `1,000.50` dan `1.000,50` dipahami sebagai 1000,50 dan tambahkan regression test.
 - **TLDR AI agents done:** Parser kini mengenali separator terakhir sebagai desimal ketika bagian pecahannya 1–2 digit, tanpa merusak format ribuan penuh. Dua regression test format campuran ditambahkan.
 - **Milestone:** M3/M4 — Semantic grounding numeric parser hardening
@@ -585,7 +635,7 @@
 
 ## Timestamp: 2026-08-08 11:22:00 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki observability kegagalan HTTP Gemini agar telemetry server-side memuat identitas request, model, status, serta error provider yang telah disanitasi, tanpa membocorkan secret atau mengubah response publik.
 - **TLDR AI agents done:** Telemetry failure Gemini kini menyimpan status HTTP dan kode/pesan provider yang dibatasi serta disanitasi; logger route hanya menerima field aman. Regression test mencakup status 400, 401, 403, 429, 500, 503, redaksi secret, dan response client generik.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -603,7 +653,7 @@
 
 ## Timestamp: 2026-08-08 20:54:13 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Mulai Milestone F0 frontend StockFrame dengan membekukan arah Black Frame / Lime Signal, memetakan kontrak response ke presentation layer, menetapkan policy visualisasi deterministik, dan menyiapkan fixture serta test tanpa mengubah backend atau melakukan live call.
 - **TLDR AI agents done:** DESIGN.md diperbarui untuk mode Persuade/Operate dan palet lime/black. Presentation layer pure TypeScript kini mencakup catalog 16 metric, label/group/unit formatter, quality, risk, Corporate Actions, error copy, historical-price presentation, dan visualization policy dengan scalar fallback. Fixture contract-valid untuk success, degraded, error, enrichment, metric status, serta chart eligibility ditambahkan; injection Impeccable sementara dihapus dari layout.
 - **Milestone:** F0 — Freeze Presentation Contracts and Reset Direction
@@ -626,7 +676,7 @@
 
 ## Timestamp: 2026-08-08 18:32:19 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Buat tampilan live StockFrame agar arah desain frontend dapat dilihat langsung, dengan halaman pengenalan bergaya SaaS yang berlanjut ke contoh workspace analisis saham, menggunakan data fixture yang transparan dan tetap membedakan data pasar, hasil kalkulasi engine, serta interpretasi AI.
 - **TLDR AI agents done:** Baseline visual “Signal Ledger” diimplementasikan sebagai landing page dan workspace analisis responsif. Tampilan mencakup form riset, pratinjau hasil, grafik historis satu tahun, metrik utama, tiga profil risiko, temuan, corporate actions, disclaimer, serta konfigurasi Impeccable Live untuk iterasi visual langsung.
 - **Milestone:** F0 — Frontend visual foundation
@@ -648,7 +698,7 @@
 
 ## Timestamp: 2026-08-09 07:13:46 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki gap kontrak F0 sebelum melanjutkan F1: pisahkan grouping metrik presentation dari policy backend, validasi currency pada visualisasi capital structure, selaraskan fixture Corporate Actions yang kosong, dan buat ringkasan harga historis menyertakan mata uang.
 - **TLDR AI agents done:** Mapping lima kelompok riset frontend dibuat eksplisit dan independen dari policy AI. Capital structure kini menolak currency mismatch. Fixture degraded dan empty Corporate Actions tidak lagi membawa claim atau evidence event. Text equivalent harga memakai formatter currency-aware.
 - **Milestone:** F0 — Frontend visual foundation
@@ -672,7 +722,7 @@
   - [x] Review hardening F0 selesai dan tidak melanjutkan implementasi F1.
 ## Timestamp: 2026-08-09 07:33:40 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Lanjutkan F1 frontend StockFrame dengan arah visual Black Frame / Lime Signal seperti referensi: hero identitas yang kuat, manifesto lime, alur metode yang jelas, reading guide berbasis evidence, dan transisi menuju meja riset.
 - **TLDR AI agents done:** Baseline homepage diganti menjadi pengantar F1 yang responsif. Header minimal, layered evidence artifact, signal line, manifesto, narrative Data → Engine → Interpretasi, reading guide, research desk transition, focus ring, skip link, dan reduced-motion support sudah dibuat.
 - **Milestone:** F1 — Identity and Introduction
@@ -695,7 +745,7 @@
   - [ ] Interaksi analisis dan report renderer belum termasuk F1.
 ## Timestamp: 2026-08-09 11:34:53 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup acceptance gap F1 dengan memberi label pada seluruh angka ilustratif, menghapus affordance research desk yang belum berfungsi, menyelaraskan checklist dengan hasil detector, dan mencatat keterbatasan review mobile.
 - **TLDR AI agents done:** Artifact hero, contoh methodology, dan reading guide kini menampilkan penanda `Ilustrasi · bukan data live`. Research desk diberi status `Pratinjau F1`, shortcut yang tidak berfungsi dihapus, dan CTA `Susun analisis` menjadi state non-interaktif yang jujur sampai F2.
 - **Milestone:** F1 — Identity and Introduction
@@ -717,7 +767,7 @@
   - [ ] Review viewport mobile 390px tetap terbuka.
 ## Timestamp: 2026-08-09 12:22:44 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Hilangkan istilah milestone internal dari label, aria-label, dan status research desk agar copy F1 mudah dipahami pengguna umum.
 - **TLDR AI agents done:** Copy research desk kini memakai `Meja riset`, `Pratinjau meja riset`, dan `Form analisis segera tersedia` tanpa menyebut F1 atau F2.
 - **Milestone:** F1 — Identity and Introduction
@@ -738,7 +788,7 @@
 
 ## Timestamp: 2026-08-09 13:48:57 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki build error Unterminated regexp literal setelah sesi Impeccable Live dan pastikan halaman F1 kembali valid.
 - **TLDR AI agents done:** Memulihkan source `app/page.tsx` dari source map build F1 terakhir yang valid, menghapus kerusakan JSX sisa cleanup Live, dan mempertahankan copy publik F1 yang sudah disepakati.
 - **Milestone:** F1 — Identity and Introduction
@@ -758,7 +808,7 @@
 
 ## Timestamp: 2026-08-09 17:20:40 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Sesuaikan komposisi hero berdasarkan referensi: hapus semua label ilustrasi, hilangkan bidang putih tanpa menghapus isi Interpretasi AI, perbesar grafik, dan cegah label Interpretasi bertumpuk dengan konten lain.
 - **TLDR AI agents done:** Menghapus seluruh copy ilustrasi, menghilangkan bidang putih, mengembalikan Interpretasi AI sebagai teks bebas tanpa background, memperbesar grafik utama, dan memindahkan label Interpretasi agar terpisah dari kartu metrik.
 - **Milestone:** F1 — Identity and Introduction
@@ -781,7 +831,7 @@
 
 ## Timestamp: 2026-08-09 17:24:39 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Koreksi komposisi hero agar kartu putih Interpretasi AI tetap ada, garis kotak abu-abu yang mengganggu dihapus, grafik tetap besar, dan label Interpretasi tidak bertumpuk dengan kartu.
 - **TLDR AI agents done:** Menghapus dua elemen orbit abu-abu, mengembalikan kartu putih Interpretasi AI, menempatkannya di atas area grafik dengan ukuran terbatas, dan memisahkan label Interpretasi dari kartu.
 - **Milestone:** F1 — Identity and Introduction
@@ -804,7 +854,7 @@
 
 ## Timestamp: 2026-08-09 17:30:30 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Atur ulang hero agar grafik berada di atas dan kartu putih Interpretasi AI berada di bawahnya, lalu hapus box lime bertuliskan Interpretasi.
 - **TLDR AI agents done:** Menaikkan posisi grafik, menurunkan kartu putih Interpretasi AI ke bawah grafik, dan menghapus label lime Interpretasi tanpa mengubah isi kartu atau data sumber.
 - **Milestone:** F1 — Identity and Introduction
@@ -827,7 +877,7 @@
 
 ## Timestamp: 2026-08-09 17:33:10 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ubah grafik agar tidak tampak melayang, tetapi menjadi garis besar yang menempel dari bawah kiri dan naik melintasi hero seperti referensi coretan biru.
 - **TLDR AI agents done:** Mengikat grafik ke bagian bawah hero, memperbesar tinggi dan rentang visualnya, serta mempertahankan kartu putih Interpretasi AI di bawah jalur grafik.
 - **Milestone:** F1 — Identity and Introduction
@@ -849,7 +899,7 @@
 
 ## Timestamp: 2026-08-09 14:13:43 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Terapkan penyempurnaan visual artifact hero agar hanya memakai satu grafik yang jelas, tidak tertutup Interpretasi AI, dan tidak menampilkan kotak lime maupun label Kalkulasi yang mengganggu.
 - **TLDR AI agents done:** Menghapus frame lime dan grafik mini kedua, memperbesar keterbacaan grafik utama, menurunkan serta mengecilkan lembar Interpretasi AI, mempertahankan label ilustrasi untuk kejujuran data, dan memperbaiki karakter mojibake pada copy F1.
 - **Milestone:** F1 — Identity and Introduction
@@ -872,7 +922,7 @@
 
 ## Timestamp: 2026-08-09 17:40:37 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perbaiki posisi panah hijau pada alur metodologi agar tidak menabrak nomor dan label langkah berikutnya di desktop maupun mobile.
 - **TLDR AI agents done:** Memusatkan dan memperpendek separator panah di ruang antar-kolom, serta memberi inset tambahan pada layout mobile agar jaraknya tetap aman.
 - **Milestone:** F1 — Identity and Introduction
@@ -894,7 +944,7 @@
 
 ## Timestamp: 2026-08-09 17:47:25 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Pindahkan panah hijau dari area nomor dan label langkah ke sela antara paragraf penjelasan dan kartu contoh seperti pada referensi visual.
 - **TLDR AI agents done:** Menurunkan kedua panah separator ke area transisi sebelum kartu contoh pada desktop, menjaga aturan mobile, dan menyelesaikan review viewport 390px.
 - **Milestone:** F1 — Identity and Introduction
@@ -918,7 +968,7 @@
 
 ## Timestamp: 2026-08-09 18:01:36 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Naikkan posisi panah metodologi sedikit dan geser sedikit ke kiri dari posisi sebelumnya.
 - **TLDR AI agents done:** Menggeser separator panah ke atas 25px dan ke kiri 8px pada layout desktop, sementara aturan mobile tetap dipertahankan.
 - **Milestone:** F1 — Identity and Introduction
@@ -936,7 +986,7 @@
 
 ## Timestamp: 2026-08-09 20:15:18 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ganti headline utama menjadi “Riset saham. Pahami perusahaannya.” dan perbaiki copy panduan agar lebih masuk akal.
 - **TLDR AI agents done:** Mengubah headline hero serta judul reading guide menjadi “Pahami hasilnya. Telusuri buktinya.”, lalu menyelaraskan contoh tagline pada frontend spec.
 - **Milestone:** F1 — Identity and Introduction
@@ -958,7 +1008,7 @@
 
 ## Timestamp: 2026-08-09 20:27:01 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Lanjutkan F2 dengan membangun meja riset interaktif, pengiriman request analisis, serta state loading, ambiguity, success, dan error yang konsisten dengan kontrak backend.
 - **TLDR AI agents done:** Menambahkan research desk sebagai client boundary terfokus dengan input terkontrol, validasi request, submit ke `/api/analyze`, pembatalan request, pencegahan duplicate submit, status aksesibel, pemilihan kandidat instrumen ambigu, dan handoff success tanpa mengubah response publik backend.
 - **Milestone:** F2 — Research Desk dan Request State
@@ -988,7 +1038,7 @@
 
 ## Timestamp: 2026-08-09 20:44:54 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Tutup gap acceptance F2 pada recovery error, ambiguity, dan interaction testing, lalu rapikan hero mobile serta metafora visual agar tidak menyerupai prediksi harga.
 - **TLDR AI agents done:** Membedakan recovery retry/edit/tanpa tombol sesuai sumber error, menambahkan aksi `Ubah pencarian` untuk ambiguity, menguji interaction contract untuk duplicate submit, cancel, preserved values, loading, candidate resubmission, dan recovery visibility, serta mengganti garis hero menjadi alur Data–Engine–Interpretasi dengan layout mobile yang tidak memotong konten.
 - **Milestone:** F2 — Research Desk dan Request State
@@ -1019,7 +1069,7 @@
 
 ## Timestamp: 2026-08-09 21:00:11 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ringkas schema structured output Gemini yang terlalu kompleks agar model `gemini-3.1-flash-lite` dapat menerima kontrak report tanpa mengubah API publik, validasi domain, atau perilaku one-call.
 - **TLDR AI agents done:** Mengganti schema provider menjadi `responseJsonSchema` ringkas dengan `$defs` reusable, metric ID dan evidence alias sebagai string yang divalidasi lokal, profil sebagai array tiga item, serta normalisasi deterministik kembali ke kontrak profil publik. Prompt, dokumentasi, test adapter, checklist M3, dan validasi tanpa live call diperbarui.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1047,7 +1097,7 @@
 
 ## Timestamp: 2026-08-09 21:25:30 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ganti schema structured output Gemini yang masih ditolak menjadi satu protocol flat berbasis array item, pertahankan satu panggilan, validasi lokal, kontrak API, dan lakukan live smoke test AAPL.
 - **TLDR AI agents done:** Mengganti schema nested menjadi `items[]` dengan tipe dasar saja, menambahkan parser dan normalizer flat untuk cardinality section, profil, rating, confidence, metric reference, serta corporate-action alias, menaikkan prompt ke `m3.ai-prompt.6`, memperbarui dokumentasi dan regression test, lalu menjalankan live smoke test.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1078,7 +1128,7 @@
 
 ## Timestamp: 2026-08-10 05:28:13 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Perinci observability kegagalan Gemini setelah flat schema berhasil, bedakan penyebab normalisasi dengan reason code aman, dan longgarkan kontrak consideration agar hanya memakai placeholder yang ditentukan.
 - **TLDR AI agents done:** Menambahkan tipe reason telemetry terbatas, error normalisasi bertipe dengan kategori `flat_envelope`, `unknown_kind`, `placeholder_mismatch`, `missing_section`, `profile_mismatch`, dan `reference_mismatch`, memisahkan validasi thesis dari consideration, serta mencatat telemetry server-side hanya sebagai request ID, kategori, dan reason.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1107,7 +1157,7 @@
 
 ## Timestamp: 2026-08-10 05:43:55 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Bersihkan grafik hero dengan menghapus label DATA dan ENGINE yang tampil di sepanjang garis sinyal, tanpa menghilangkan kartu data sumber, metrik engine, atau interpretasi AI.
 - **TLDR AI agents done:** Menghapus seluruh teks label stage dari SVG grafik hero dan mengganti label aksesibilitasnya menjadi deskripsi garis sinyal visual yang netral.
 - **Milestone:** F1 — Identity and Introduction
@@ -1128,7 +1178,7 @@
 
 ## Timestamp: 2026-08-10 05:50:53 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Ubah grafik hero agar menyerupai garis biru zig-zag yang naik seperti referensi pengguna, serta buat scrollbar halaman custom supaya tidak mengganggu tampilan.
 - **TLDR AI agents done:** Mengganti garis lime datar menjadi satu polyline biru yang lebih panjang dan berzig-zag, menghapus rule/marker grafik, menempatkannya lebih rendah di hero, serta menambahkan scrollbar tipis dengan warna tema StockFrame dan state hover.
 - **Milestone:** F1 — Identity and Introduction
@@ -1157,7 +1207,7 @@
 
 ## Timestamp: 2026-08-10 07:13:10 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Pisahkan kegagalan flat Gemini menjadi JSON invalid, envelope flat yang tidak sesuai, dan output terpotong; hilangkan versi internal dari payload model serta catat `finishReason` secara aman.
 - **TLDR AI agents done:** Menghapus `schemaVersion` dari kontrak provider dan schema Gemini, menetapkan `REPORT_SCHEMA_VERSION` hanya saat server membentuk report final, menambahkan reason code telemetry `invalid_json`, `flat_envelope`, dan `output_truncated`, serta mendeteksi `MAX_TOKENS` tanpa mencatat content model.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1180,7 +1230,7 @@
 
 ## Timestamp: 2026-08-10 09:42:54 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Mengurangi risiko output Gemini terpotong dengan thinking level rendah, batas token lebih longgar, dan instruksi prompt yang membatasi jumlah serta panjang item report.
 - **TLDR AI agents done:** Menaikkan batas output default Gemini menjadi 8.192 token, menambahkan `thinkingConfig.thinkingLevel: low`, memperketat instruksi cardinality dan panjang teks pada prompt, menaikkan versi prompt ke `m3.ai-prompt.7`, serta menambahkan regression assertion untuk konfigurasi tersebut.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1207,7 +1257,7 @@
 
 ## Timestamp: 2026-08-10 09:53:17 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Menghindari kegagalan report akibat ketidakpatuhan pada field profile, rating, dan confidence yang hanya berfungsi sebagai placeholder pada output Gemini.
 - **TLDR AI agents done:** Normalizer kini tetap ketat pada profile thesis, hanya memeriksa profile dan metric references pada consideration, serta mengabaikan metadata placeholder pada item non-profile; regression test ditambahkan untuk membuktikan report tetap valid.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1232,7 +1282,7 @@
 
 ## Timestamp: 2026-08-10 10:01:17 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Memisahkan penyebab kegagalan output flat Gemini agar content kosong, root envelope salah, item tidak valid, dan text kosong memiliki telemetry reason yang berbeda tanpa mengubah schema provider.
 - **TLDR AI agents done:** Menambahkan reason code telemetry baru, memetakan setiap cabang parser dan adapter ke kategori yang spesifik, serta menambahkan regression test tanpa mencatat raw output atau secret.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1258,7 +1308,7 @@
 
 ## Timestamp: 2026-08-10 10:10:31 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Mengganti kontrak provider Gemini dari wrapper `{ items }` menjadi satu JSON array top-level, tetap menerima format lama di parser, memperbarui prompt, lalu melakukan controlled live test.
 - **TLDR AI agents done:** Schema Gemini kini berupa array berisi entry report; parser menerima array baru maupun wrapper lama; prompt meminta tepat satu JSON array; versi prompt internal dinaikkan tanpa menambah reason telemetry.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1284,7 +1334,7 @@
 
 ## Timestamp: 2026-08-10 10:46:23 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Mengadopsi arsitektur Gemini profile-only seperti implementasi referensi: model hanya mengembalikan interpretasi tiga profil risiko, sedangkan backend membangun bagian laporan lain secara deterministik. Parser fence JSON, validasi lokal, fallback JSON mode satu kali, dan kontrak `FinalReport` publik harus tetap kompatibel.
 - **TLDR AI agents done:** Mengubah alur provider Gemini menjadi profile-only, menambahkan normalisasi interpretasi dan pembentukan report deterministik, mempertahankan parser flat lama untuk kompatibilitas, serta menyelaraskan structured schema dengan format Gemini-native `responseSchema`.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1316,7 +1366,7 @@
 
 ## Timestamp: 2026-08-10 11:12:38 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Menyamakan pipeline Gemini profile-only dengan implementasi referensi agar schema native, instruksi metric ID, validasi corporate-action prose, dan reason telemetry tidak saling bertentangan. Perubahan diuji lokal tanpa live request baru.
 - **TLDR AI agents done:** Membetulkan tipe provider `ARRAY`, mewajibkan setiap thesis dan consideration memiliki metric ID, mengizinkan corporate-action wording yang grounded pada interpretasi profil, serta memisahkan reason `contract_mismatch` dari `flat_envelope`.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1344,7 +1394,7 @@
 
 ## Timestamp: 2026-08-10 10:59:20 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Mengadopsi tampilan frontend dari salinan StockFrame milik rekan ke workspace utama, dengan tetap mempertahankan Route Handler, metrics engine, dan pipeline AI yang sudah ada.
 - **TLDR AI agents done:** Mengganti halaman dan styling utama dengan Research Score Sheet hitam-lime beserta workspace laporan bertab, memperbarui metadata halaman, dan mengecualikan script live-development lokal milik sumber.
 - **Milestone:** F2 — Research Desk dan Request State
@@ -1368,7 +1418,7 @@
 
 ## Timestamp: 2026-08-10 11:33:40 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Periksa response Gemini yang ditolak dan sesuaikan kontrak prompt dengan pasangan istilah klaim serta metric ID yang benar.
 - **TLDR AI agents done:** Menjalankan controlled inspection tanpa menyimpan raw response; ditemukan struktur profile-only valid, tetapi dua consideration memakai `eps_ttm` untuk bahasa profitabilitas. Prompt diperketat agar istilah EPS, profitabilitas, valuasi, leverage, likuiditas, dan arus kas selalu selaras dengan metric ID yang dirujuk.
 - **Milestone:** M3 — One-model analysis pipeline
@@ -1389,7 +1439,7 @@
 
 ## Timestamp: 2026-08-10 11:43:21 WIB
 
-- **Model used:** Codex (exact model unavailable)
+- **Model used:** GPT5.6 Luna High
 - **Human Prompt:** Longgarkan sementara validator semantic grounding agar hasil analisis Gemini yang struktur, evidence, dan angka-nya valid dapat diterima untuk kebutuhan darurat.
 - **TLDR AI agents done:** Menonaktifkan sementara penolakan berdasarkan kecocokan bahasa dengan kelompok metric, sambil mempertahankan validasi metric tersedia, evidence, angka canonical, confidence, struktur profil, dan larangan klaim eksternal maupun instruksi transaksi.
 - **Milestone:** M3 — One-model analysis pipeline
