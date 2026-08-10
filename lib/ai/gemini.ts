@@ -219,6 +219,14 @@ export class GeminiAdapter implements AiModelAdapter {
   }
 
   async generateReport(input: AiAnalysisRequest, externalSignal?: AbortSignal): Promise<AiAnalysisResult> {
+    return this.generateReportAttempt(input, externalSignal, true);
+  }
+
+  private async generateReportAttempt(
+    input: AiAnalysisRequest,
+    externalSignal: AbortSignal | undefined,
+    retryInvalidResponse: boolean,
+  ): Promise<AiAnalysisResult> {
     const startedAt = performance.now();
     const modelForTelemetry = this.modelId ?? "unconfigured";
     let providerFailure: ProviderFailureTelemetry | undefined;
@@ -252,6 +260,7 @@ export class GeminiAdapter implements AiModelAdapter {
     }
     const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
     let usage: AiUsage | undefined;
+    let retryableOutputFailure = false;
 
     try {
       const requestUrl = endpoint(this.baseUrl, this.modelId);
@@ -374,6 +383,7 @@ export class GeminiAdapter implements AiModelAdapter {
         logContractFailure("invalid_json");
         throw new AiError("AI_INVALID_RESPONSE", "Gemini content is not valid JSON", false);
       }
+      retryableOutputFailure = true;
       const normalizedReport = normalizeInterpretationMetricIds(mapEvidenceAliasesToCanonical(rawReport, evidenceContext.aliases));
       const report = Array.isArray(rawReport) || (rawReport && typeof rawReport === "object" && !Array.isArray(rawReport) && "items" in rawReport)
         ? (() => {
@@ -433,6 +443,9 @@ export class GeminiAdapter implements AiModelAdapter {
       };
     } catch (error) {
       if (error instanceof AiError) {
+        if (error.code === "AI_INVALID_RESPONSE" && retryableOutputFailure && retryInvalidResponse && !externalSignal?.aborted) {
+          return this.generateReportAttempt(input, externalSignal, false);
+        }
         error.telemetry = failureTelemetry(usage);
         throw error;
       }

@@ -194,6 +194,18 @@ describe("M3 Gemini analysis adapter", () => {
     expect(fallbackBody.generationConfig).toEqual({ responseMimeType: "application/json", maxOutputTokens: 8192 });
   });
 
+  test("retries once when model output fails local validation", async () => {
+    const fetchFn = vi.fn()
+      .mockResolvedValueOnce(responseWithContent(JSON.stringify({ ...report(), profiles: undefined })))
+      .mockResolvedValueOnce(responseWithContent(JSON.stringify({ profiles: report().profiles }))) as unknown as typeof fetch;
+    const adapter = new GeminiAdapter({ apiKey: "fake-key", modelId: "gemini-ga-fixture", fetchFn });
+
+    const result = await adapter.generateReport({ requestId: "00000000-0000-4000-8000-000000000001", packet: packet() });
+
+    expect(result.report.profiles).toHaveProperty("moderate");
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
   test("normalizes a flat report independently of item order", async () => {
     const flat = providerReport();
     flat.items.reverse();
@@ -320,7 +332,7 @@ describe("M3 Gemini analysis adapter", () => {
     const generationConfig = requestBody.generationConfig as Record<string, unknown>;
     const providerSchema = generationConfig.responseSchema as Record<string, unknown>;
     expect(providerSchema.maxItems).toBeUndefined();
-    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
   test("prompt is versioned, delimited, bounded, and excludes raw provider payloads", () => {
@@ -410,10 +422,10 @@ describe("M3 Gemini analysis adapter", () => {
     };
 
     await expect(adapter.generateReport({ requestId: "00000000-0000-4000-8000-000000000001", packet: corporatePacket })).rejects.toMatchObject({ code: "AI_INVALID_RESPONSE" });
-    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
-  test("malformed JSON is a controlled failure with no repair call", async () => {
+  test("malformed JSON remains a controlled failure", async () => {
     const fetchFn = vi.fn(async () => responseWithContent("not-json")) as unknown as typeof fetch;
     const validationEvents: Array<{ requestId: string; category: string; reason: string }> = [];
     const adapter = new GeminiAdapter({
@@ -491,12 +503,12 @@ describe("M3 Gemini analysis adapter", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  test("rejects invalid schema without a repair call", async () => {
+  test("retries invalid schema output once", async () => {
     const fetchFn = vi.fn(async () => responseWithContent(JSON.stringify({ ...report(), profiles: undefined }))) as unknown as typeof fetch;
     const adapter = new GeminiAdapter({ apiKey: "fake-key", modelId: "gemini-ga-fixture", fetchFn });
 
     await expect(adapter.generateReport({ requestId: "00000000-0000-4000-8000-000000000001", packet: packet() })).rejects.toMatchObject({ code: "AI_INVALID_RESPONSE" });
-    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 
   test("logs only the validation category for an invalid model report", async () => {
@@ -513,7 +525,8 @@ describe("M3 Gemini analysis adapter", () => {
     });
 
     await expect(adapter.generateReport({ requestId: "00000000-0000-4000-8000-000000000001", packet: packet() })).rejects.toMatchObject({ code: "AI_INVALID_RESPONSE" });
-    expect(validationEvents).toEqual([{ requestId: "00000000-0000-4000-8000-000000000001", category: "unknown evidence", reason: "reference_mismatch", finishReason: "STOP" }]);
+    expect(validationEvents).toHaveLength(2);
+    expect(validationEvents.at(-1)).toEqual({ requestId: "00000000-0000-4000-8000-000000000001", category: "unknown evidence", reason: "reference_mismatch", finishReason: "STOP" });
   });
 
   test.each([400, 401, 403, 429, 500, 503])("records bounded safe telemetry for Gemini HTTP %s", async (status) => {
@@ -620,6 +633,13 @@ describe("M3 model-output validation", () => {
       const wrongMetricPacket = packetWithMetrics([metricFor(wrongMetricId)]);
       expect(() => validateModelReport({ ...report(), summary: claim(text, [wrongMetricId]) }, wrongMetricPacket)).not.toThrow();
     }
+  });
+
+  test("allows interpretive wording without treating it as an external fact", () => {
+    expect(() => validateModelReport({
+      ...report(),
+      summary: claim("Metrik yang tersedia menunjukkan dominasi pasar dan keunggulan biaya.", ["eps_ttm"]),
+    }, packet())).not.toThrow();
   });
 
   test("rejects unavailable metrics and unsupported external claims", () => {

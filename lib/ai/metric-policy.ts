@@ -33,10 +33,10 @@ export type MetricId = (typeof METRIC_IDS)[number];
 export type MetricPolicyGroup = keyof typeof METRIC_POLICY;
 
 const UNSUPPORTED_EXTERNAL_PATTERNS = [
-  /\b(?:market saturation|saturasi pasar|market dominance|dominasi pasar|market share|pangsa pasar)\b/i,
+  /\b(?:market saturation|saturasi pasar|market share|pangsa pasar)\b/i,
   /\b(?:innovation strategy|strategi inovasi|inovasi perusahaan|company strategy|strategi perusahaan)\b/i,
   /\b(?:macroeconomic|makroekonomi|consumer spending|belanja konsumen)\b/i,
-  /\b(?:competition|kompetisi|competitive advantage|keunggulan kompetitif|regulation|regulasi|sentiment|sentimen|news|berita)\b/i,
+  /\b(?:competition|kompetisi|regulation|regulasi|sentiment|sentimen|news|berita)\b/i,
 ];
 
 export function validateMetricClaimPolicy(text: string, _metricIds: readonly string[]): string | undefined {
