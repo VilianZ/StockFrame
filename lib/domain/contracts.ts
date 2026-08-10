@@ -2,6 +2,7 @@ import type { z } from "zod";
 
 import type {
   AnalysisRequestSchema,
+  AiInterpretationSchema,
   AnalyzeErrorResponseSchema,
   AnalyzeResponseSchema,
   CorporateActionEnrichmentSchema,
@@ -16,6 +17,7 @@ import type {
   MetricSchema,
   PricePointSchema,
   ProfileRecommendationSchema,
+  ProfilesSchema,
   QualityAssessmentSchema,
   QualityDecisionSchema,
   ShortMetricClaimSchema,
@@ -103,6 +105,8 @@ export type QualityDecision = z.infer<typeof QualityDecisionSchema>;
 export type ProfileRecommendation = z.infer<
   typeof ProfileRecommendationSchema
 >;
+export type Profiles = z.infer<typeof ProfilesSchema>;
+export type AiInterpretation = z.infer<typeof AiInterpretationSchema>;
 export type FinalReport = z.infer<typeof FinalReportSchema>;
 export type AnalyzeResponse = z.infer<typeof AnalyzeResponseSchema>;
 export type AnalyzeErrorResponse = z.infer<typeof AnalyzeErrorResponseSchema>;

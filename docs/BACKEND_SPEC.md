@@ -330,6 +330,8 @@ The model returns:
 
 The three perspectives are sections of one report, not separate AI agents or separate requests.
 
+The Gemini provider wire contract uses a compact `responseJsonSchema` with one flat `items` array. Each item carries only `kind`, `profile`, `rating`, `confidence`, `text`, and `referenceIds`; it uses no `$defs`, `$ref`, long enums, or repeated nested sections. The adapter validates cardinality and field roles, maps evidence aliases, assembles the public report shape, and then runs `FinalReportSchema` plus semantic validation. This provider shape does not change the public API or the canonical report contract.
+
 Output validation must reject:
 
 - malformed JSON;

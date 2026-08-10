@@ -170,10 +170,14 @@ export const CorporateActionClaimSchema = z.strictObject({
   claim: z.string().trim().min(1).max(500),
 });
 
-const profilesSchema = z.strictObject({
+export const ProfilesSchema = z.strictObject({
   conservative: ProfileRecommendationSchema,
   moderate: ProfileRecommendationSchema,
   aggressive: ProfileRecommendationSchema,
+});
+
+export const AiInterpretationSchema = z.strictObject({
+  profiles: ProfilesSchema,
 });
 
 export const FinalReportSchema = z
@@ -185,7 +189,7 @@ export const FinalReportSchema = z
     uncertainties: z.array(ShortMetricClaimSchema).min(1).max(16),
     limitations: z.array(z.string().trim().min(1).max(500)),
     corporateActionClaims: z.array(CorporateActionClaimSchema).max(20).default([]),
-    profiles: profilesSchema,
+    profiles: ProfilesSchema,
     disclaimer: z.string().trim().min(1).max(1000),
   })
   .superRefine((report, context) => {

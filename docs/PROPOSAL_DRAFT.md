@@ -1,14 +1,14 @@
 # Proposal Bitsmikro Innovative Vibecode 2026
 
-Nama project sementara: **EquiScope AI**  
-Tagline: **Riset Saham Berbasis Data untuk Setiap Profil Risiko**
+Nama project: **StockFrame**
+Tagline: **Riset saham. Pahami perusahaannya.**
 
-> Nama project, tagline, identitas tim, dan teknologi frontend dapat disesuaikan sebelum proposal final dikirimkan.
+> Identitas tim dan tautan publik dilengkapi sebelum proposal final dikirimkan.
 
 ## Informasi Tim
 
 - **Nama Tim:** `[Nama tim]`
-- **Nama Project:** EquiScope AI
+- **Nama Project:** StockFrame
 - **Kategori:** Mahasiswa
 - **Asal Universitas:** Universitas Mikroskil
 - **Anggota 1 (Ketua):** `[Nama]`
@@ -23,7 +23,7 @@ Perkembangan teknologi finansial telah membuat data pasar modal semakin mudah di
 
 Di sisi lain, penggunaan kecerdasan buatan untuk analisis finansial memiliki tantangan tersendiri. Model AI dapat memberikan penjelasan yang meyakinkan, tetapi berisiko menghasilkan angka atau kesimpulan yang tidak didukung oleh data. Oleh karena itu, dibutuhkan sistem yang memisahkan proses perhitungan finansial dari proses interpretasi AI.
 
-EquiScope AI dirancang sebagai platform riset saham berbasis web yang menggabungkan data pasar, perhitungan metrik finansial secara deterministik, dan analisis AI terstruktur. Sistem menghitung metrik seperti P/E, DER, ROA, ROE, ROIC, margin laba, free cash flow, price return, dan volatilitas menggunakan TypeScript di sisi server. Satu model AI kemudian menginterpretasikan hasil tersebut dan menyajikannya dalam satu laporan untuk profil konservatif, moderat, dan agresif.
+StockFrame dirancang sebagai platform riset saham berbasis web yang menggabungkan data pasar, perhitungan metrik finansial secara deterministik, dan analisis AI terstruktur. Sistem menghitung metrik seperti P/E, DER, ROA, ROE, ROIC, margin laba, free cash flow, price return, dan volatilitas menggunakan TypeScript di sisi server. Satu model AI kemudian menginterpretasikan hasil tersebut dan menyajikannya dalam satu laporan dengan perspektif konservatif, moderat, dan agresif.
 
 ## 1.2 Rumusan Masalah
 
@@ -35,7 +35,7 @@ Berdasarkan latar belakang tersebut, rumusan masalah project ini adalah:
 
 ## 1.3 Tujuan Project
 
-Tujuan pengembangan EquiScope AI adalah:
+Tujuan pengembangan StockFrame adalah:
 
 1. Menyediakan platform riset saham yang dapat mengambil, menormalisasi, dan mengolah data perusahaan secara terstruktur.
 2. Menghasilkan metrik finansial yang transparan, dapat ditelusuri, dan tidak bergantung pada perhitungan AI.
@@ -52,28 +52,28 @@ Tujuan pengembangan EquiScope AI adalah:
 
 ## 2.1 Nama Project
 
-- **Nama Project:** EquiScope AI
-- **Tagline:** *Riset Saham Berbasis Data untuk Setiap Profil Risiko.*
+- **Nama Project:** StockFrame
+- **Tagline:** *Riset saham. Pahami perusahaannya.*
 
 ## 2.2 Deskripsi Singkat Project
 
-EquiScope AI adalah platform riset saham berbasis web yang membantu pengguna memahami kondisi suatu perusahaan melalui data pasar, metrik finansial, dan interpretasi AI. Pengguna cukup memilih perusahaan dan menuliskan aspek yang ingin dianalisis, kemudian sistem menghasilkan laporan terstruktur untuk profil konservatif, moderat, dan agresif.
+StockFrame adalah platform riset saham berbasis web yang membantu pengguna memahami kondisi suatu perusahaan melalui data pasar, metrik finansial, dan interpretasi AI. Pengguna cukup memilih perusahaan dan menuliskan aspek yang ingin dianalisis, kemudian sistem menghasilkan laporan terstruktur dengan perspektif konservatif, moderat, dan agresif.
 
-EquiScope AI tidak melakukan transaksi saham dan tidak memberikan nasihat finansial personal. Hasil yang diberikan bersifat riset dan edukasi.
+StockFrame tidak melakukan transaksi saham dan tidak memberikan nasihat finansial personal. Hasil yang diberikan bersifat riset dan edukasi.
 
 ## 2.3 Gambaran Umum Project
 
 Pengguna memulai analisis dengan mencari nama perusahaan atau ticker saham. Sistem akan menampilkan kandidat yang sesuai agar tidak memilih perusahaan secara ambigu. Setelah perusahaan dipilih, pengguna menuliskan fokus analisis, misalnya valuasi, kemampuan menghasilkan laba, kondisi utang, atau prospek pertumbuhan.
 
-Route Handler Next.js mengambil data pasar dan laporan keuangan melalui Business Quant. Data kemudian dinormalisasi dan digunakan untuk menghitung metrik finansial menggunakan TypeScript. Setiap metrik memiliki formula, status, sumber data, dan peringatan apabila perhitungan tidak dapat dilakukan.
+Pada arsitektur utama, Route Handler Next.js mengambil data pasar dan laporan keuangan saham Amerika Serikat melalui Business Quant. Apabila perluasan saham Indonesia berhasil diselesaikan dan divalidasi, sistem juga menggunakan Profit.com melalui provider adapter terpisah. Data dari provider yang aktif kemudian dinormalisasi ke struktur internal yang sama dan digunakan untuk menghitung metrik finansial menggunakan TypeScript. Setiap metrik memiliki formula, status, sumber data, dan peringatan apabila perhitungan tidak dapat dilakukan.
 
 Setelah melewati pemeriksaan kualitas data, sistem mengirimkan paket data terstruktur kepada satu model Gemini melalui Gemini API direct. Satu permintaan AI menghasilkan laporan akhir secara langsung. Perspektif konservatif, moderat, dan agresif merupakan tiga bagian dari laporan yang sama, bukan tiga agen atau tiga permintaan AI terpisah.
 
-Laporan akhir menampilkan ringkasan, analisis fundamental, valuasi, kekuatan perusahaan, risiko, keterbatasan data, tingkat keyakinan, serta rekomendasi untuk tiga profil risiko.
+Laporan akhir menampilkan ringkasan, analisis fundamental, valuasi, kekuatan perusahaan, risiko, ketidakpastian, keterbatasan data, tingkat keyakinan model, serta tiga perspektif risiko. Perspektif tersebut bukan instruksi beli atau jual, melainkan cara membaca evidence yang sama berdasarkan toleransi risiko berbeda.
 
 ## 2.4 Target Pengguna
 
-Target pengguna EquiScope AI adalah:
+Target pengguna StockFrame adalah:
 
 - **Mahasiswa dan pelajar:** Pengguna yang ingin mempelajari cara membaca data fundamental perusahaan dan memahami penggunaan AI dalam riset finansial.
 - **Investor pemula:** Pengguna yang membutuhkan rangkuman terstruktur sebelum melakukan riset lebih lanjut.
@@ -81,7 +81,7 @@ Target pengguna EquiScope AI adalah:
 
 ## 2.5 Solusi yang Ditawarkan
 
-EquiScope AI menawarkan satu alur riset terintegrasi:
+StockFrame menawarkan satu alur riset terintegrasi:
 
 1. Menyelesaikan nama perusahaan menjadi ticker yang tepat.
 2. Mengambil data pasar dan laporan keuangan.
@@ -96,7 +96,7 @@ Pendekatan ini mengurangi risiko AI mengarang angka karena nilai finansial utama
 
 ## 2.6 Keunggulan dan Inovasi Project
 
-Keunggulan EquiScope AI meliputi:
+Keunggulan StockFrame meliputi:
 
 1. **Pemisahan perhitungan dan interpretasi:** Metrik dihitung secara deterministik oleh TypeScript, sedangkan AI hanya melakukan interpretasi.
 2. **Tiga profil risiko dari data yang sama:** Satu penelitian menghasilkan sudut pandang konservatif, moderat, dan agresif tanpa mengambil data berulang kali.
@@ -118,8 +118,8 @@ Keunggulan EquiScope AI meliputi:
 - Sistem menghitung metrik finansial.
 - Sistem melakukan pemeriksaan kualitas data.
 - Sistem menggunakan satu model AI untuk menghasilkan laporan terstruktur.
-- Sistem menghasilkan tepat tiga profil rekomendasi.
-- Pengguna dapat melihat status proses saat menunggu respons.
+- Sistem menghasilkan tepat tiga perspektif risiko: konservatif, moderat, dan agresif.
+- Pengguna menerima status permintaan yang jelas tanpa progress provider yang dibuat-buat.
 
 ### Kebutuhan Non-Fungsional
 
@@ -137,7 +137,7 @@ Keunggulan EquiScope AI meliputi:
 2. Pengguna mencari nama perusahaan atau ticker.
 3. Sistem menampilkan hasil pencarian yang didukung.
 4. Pengguna memilih perusahaan dan menuliskan fokus analisis.
-5. Route Handler mengambil market snapshot dari Business Quant.
+5. Route Handler mengambil market snapshot dari provider yang sesuai dengan pasar yang didukung.
 6. TypeScript menormalisasi data, menghitung metrik, dan memeriksa kualitas data.
 7. Satu model AI menghasilkan laporan berdasarkan data yang telah diverifikasi.
 8. Server memvalidasi struktur laporan dan evidence ID.
@@ -158,64 +158,96 @@ flowchart TD
 
 ## 3.3 Arsitektur Sistem
 
+Arsitektur StockFrame disiapkan dalam dua versi agar ruang lingkup project dapat disesuaikan dengan waktu pengembangan. **Versi 1** menjadi arsitektur utama yang wajib selesai dan menggunakan implementasi yang sudah berjalan. **Versi 2** merupakan perluasan dukungan saham Indonesia yang hanya diaktifkan setelah integrasi serta kualitas datanya berhasil divalidasi. Kedua versi tetap menggunakan metrics engine dan pipeline AI yang sama.
+
+### Versi 1 - Arsitektur Utama
+
 ```mermaid
 flowchart TD
     B[Browser] --> A[Next.js di Vercel]
     A --> R[Route Handler /api/analyze]
-    R --> BQ[Business Quant]
+    R --> BQ[Business Quant - Saham AS]
     R --> ME[TypeScript Metrics Engine]
     ME --> DQ[Data Quality Gate]
-    DQ --> OR[Satu Model via Gemini API]
-    OR --> FR[Structured AI Report]
+    DQ --> AI[Satu Model via Gemini API]
+    AI --> FR[Structured AI Report]
     FR --> B
 ```
 
-Frontend dan fungsi server-side berada dalam satu project Next.js. Route Handler menjadi pintu aman untuk mengakses Business Quant dan Gemini tanpa mengirim API key ke browser. Perhitungan metrik dilakukan dengan TypeScript, sedangkan satu model AI menyusun interpretasi akhir. Seluruh aplikasi di-hosting pada Vercel tanpa server Python terpisah.
+Versi 1 mendukung perusahaan yang terdaftar di bursa Amerika Serikat. Frontend dan fungsi server-side berada dalam satu project Next.js. Route Handler menjadi pintu aman untuk mengakses Business Quant dan Gemini tanpa mengirim API key ke browser. Data Business Quant dinormalisasi sebelum digunakan oleh metrics engine. Perhitungan metrik dilakukan dengan TypeScript, sedangkan satu model AI menyusun interpretasi akhir. Seluruh aplikasi di-hosting pada Vercel tanpa server Python terpisah.
+
+Versi ini menjadi batas minimum penyelesaian project karena alur Business Quant, metrics engine, validasi data, dan Gemini telah menjadi fondasi utama StockFrame. Jika waktu pengembangan terbatas atau validasi provider Indonesia belum memenuhi standar, aplikasi tetap dapat dipresentasikan dengan cakupan saham Amerika Serikat yang dinyatakan secara jelas kepada pengguna.
+
+### Versi 2 - Perluasan Saham Indonesia
+
+```mermaid
+flowchart TD
+    B[Browser] --> A[Next.js di Vercel]
+    A --> R[Route Handler /api/analyze]
+    R --> MR[Market dan Provider Router]
+    MR -->|Amerika Serikat| BQ[Business Quant]
+    MR -->|Indonesia| PF[Profit.com]
+    BQ --> NA[Canonical Data Adapter]
+    PF --> NA
+    NA --> ME[TypeScript Metrics Engine]
+    ME --> DQ[Data Quality Gate]
+    DQ --> AI[Satu Model via Gemini API]
+    AI --> FR[Structured AI Report]
+    FR --> B
+```
+
+Versi 2 menambahkan Profit.com sebagai provider untuk perusahaan yang terdaftar di Bursa Efek Indonesia. Pengguna memilih pasar Indonesia atau Amerika Serikat sebelum memilih perusahaan. Market dan Provider Router meneruskan permintaan saham AS ke Business Quant dan permintaan saham Indonesia ke Profit.com.
+
+Respons kedua provider tidak digunakan langsung oleh metrics engine. Setiap respons terlebih dahulu dipetakan oleh **Canonical Data Adapter** ke struktur internal yang sama, meliputi identitas instrumen, mata uang, periode laporan, laporan laba rugi, neraca, arus kas, harga historis, dividen, stock split, dan metadata sumber. Dengan pendekatan ini, formula finansial, data-quality gate, kontrak evidence, serta prompt Gemini tidak perlu dibuat ulang untuk setiap provider.
+
+Profit.com hanya diaktifkan pada aplikasi apabila proof-of-concept terhadap beberapa emiten Indonesia berhasil menunjukkan data fundamental dan harga historis yang lengkap, konsisten, serta menggunakan mata uang dan periode yang benar. Apabila data tidak tersedia atau tidak lolos quality gate, sistem tidak membuat kesimpulan AI dan menampilkan keterbatasan data kepada pengguna. Dengan demikian, perluasan pasar tidak mengurangi transparansi maupun ketepatan arsitektur utama.
 
 ## 3.4 Perancangan Antarmuka
 
-Antarmuka EquiScope AI menggunakan pendekatan dashboard riset yang profesional, tenang, dan mudah dipindai. Informasi ditampilkan secara bertahap agar pengguna tidak langsung dibebani seluruh data finansial.
+Antarmuka StockFrame menggunakan arah visual **Black Frame / Lime Signal**. Pengalaman dibagi menjadi dua mode yang saling terhubung. Bagian pengantar bersifat berani dan persuasif untuk memperkenalkan identitas serta metodologi StockFrame, sedangkan workspace hasil analisis lebih tenang, terstruktur, dan mudah dipindai. Informasi ditampilkan bertahap agar pengguna pemula tidak langsung dibebani seluruh data finansial tanpa menghilangkan evidence bagi pengguna yang membutuhkan detail.
 
 Prinsip desain:
 
 - Hierarki informasi yang jelas.
-- Kontras warna yang mudah dibaca.
+- Palet near-black, signal lime, deep forest, dan warm white dengan kontras yang mudah dibaca.
+- Pemisahan visual yang jelas antara data sumber, hasil engine, interpretasi AI, dan keterbatasan.
 - Progressive disclosure untuk metrik detail.
-- Status loading dan progress yang informatif.
+- Status loading yang jujur tanpa mengarang tahapan backend yang tidak dikirim API.
 - Penjelasan untuk istilah finansial.
 - Warna rating tidak menjadi satu-satunya pembeda.
 - Disclaimer dan keterbatasan data ditampilkan dengan jelas.
 - Desain responsif untuk desktop dan mobile.
+- Grafik historis selalu diberi tanggal, mata uang, dan ringkasan teks aksesibel serta tidak digambarkan sebagai proyeksi.
 
 ## 3.5 Tampilan Halaman Aplikasi
 
 Screenshot atau mockup yang disarankan:
 
-1. **Halaman New Analysis**
-   - Pencarian perusahaan.
+1. **Identity dan Introduction**
+   - Hero Black Frame / Lime Signal.
+   - Manifesto “Bukan menebak harga. Membantu membaca alasannya.”
+   - Alur Data → Engine → Interpretasi.
+2. **Meja Riset**
+   - Pencarian perusahaan atau ticker.
    - Input fokus riset.
-   - Tombol mulai analisis.
-2. **Status Analysis**
-   - Fetching data.
-   - Calculating metrics.
-   - Analyzing.
-   - Completed atau error yang mudah dipahami.
-3. **Halaman Research Result**
-   - Executive summary.
-   - Metrics utama.
-   - Strengths dan risks.
-   - Conservative, moderate, dan aggressive.
-   - Evidence dan data limitations.
+   - Loading, ambiguity, dan error yang mudah dipahami.
+3. **Laporan Riset**
+   - Ringkasan dan interpretasi AI.
+   - Grafik harga penutupan sekitar satu tahun.
+   - Metrik hasil engine dan visualisasi perbandingan yang valid.
+   - Perspektif konservatif, moderat, dan agresif.
+   - Corporate Actions, evidence, warning, dan keterbatasan data.
 
 ## 3.6 Teknologi yang Digunakan
 
 | Kategori | Teknologi | Keterangan |
 |---|---|---|
 | Full-stack Framework | Next.js, React, dan TypeScript | Frontend serta Route Handler dalam satu project |
-| Styling | Tailwind CSS atau CSS framework terpilih | Design system dan responsive layout |
+| Styling dan Design System | CSS custom | Implementasi identitas Black Frame / Lime Signal dan responsive layout tanpa template generik |
+| Visualisasi Data | Bklit UI berbasis Visx | Shared chart foundation untuk ilustrasi signal line, grafik harga historis, tooltip, marker Corporate Actions, dan perbandingan metrik yang kompatibel |
 | Server-side API | Next.js Route Handlers | Menjaga API key, mengatur workflow, dan memvalidasi respons |
 | Financial Engine | TypeScript | Normalisasi data dan perhitungan metrik deterministik |
-| Market Data | Business Quant | Data harga dan laporan keuangan |
+| Market Data | Business Quant; Profit.com sebagai perluasan opsional | Business Quant untuk saham AS dan Profit.com untuk saham Indonesia setelah validasi |
 | AI/LLM | Gemini API direct | API menuju satu model Gemini GA |
 | Deployment | Vercel | Hosting frontend dan server-side Functions |
 | Version Control | Git dan GitHub | Kolaborasi dan penyimpanan source code |
@@ -226,9 +258,9 @@ Screenshot atau mockup yang disarankan:
 
 ## 4.1 Kesimpulan
 
-EquiScope AI merupakan platform riset saham yang menggabungkan pengolahan data finansial secara deterministik dengan kemampuan interpretasi AI. Sistem membantu pengguna memahami kondisi perusahaan tanpa menyerahkan perhitungan finansial utama kepada model AI.
+StockFrame merupakan platform riset saham yang menggabungkan pengolahan data finansial secara deterministik dengan kemampuan interpretasi AI. Sistem membantu pengguna memahami kondisi perusahaan tanpa menyerahkan perhitungan finansial utama kepada model AI.
 
-Dengan market snapshot, evidence ID, data-quality gate, dan output terstruktur, EquiScope AI berusaha menghasilkan laporan yang lebih transparan dan dapat ditelusuri. Tiga profil risiko membantu pengguna melihat bagaimana data yang sama dapat menghasilkan pertimbangan berbeda berdasarkan toleransi risiko.
+Dengan market snapshot, evidence ID, data-quality gate, dan output terstruktur, StockFrame berusaha menghasilkan laporan yang lebih transparan dan dapat ditelusuri. Tiga perspektif risiko membantu pengguna melihat bagaimana data yang sama dapat menghasilkan pertimbangan berbeda berdasarkan toleransi risiko.
 
 ## 4.2 Saran dan Pengembangan Selanjutnya
 
@@ -243,13 +275,31 @@ Pengembangan berikutnya dapat mencakup:
 7. Penggunaan model AI kedua sebagai reviewer independen.
 8. Pemisahan API dan worker ketika jumlah pengguna meningkat.
 
-# DAFTAR PUSTAKA AWAL
+# DAFTAR PUSTAKA
 
-1. Business Quant. *API Documentation*. https://businessquant.com/docs/api/
-2. Google. *Gemini API Documentation*. https://ai.google.dev/gemini-api/docs
-3. Next.js. *Next.js Documentation*. https://nextjs.org/docs
-4. Vercel. *Vercel Documentation*. https://vercel.com/docs
-5. Tambahkan referensi akademik atau buku untuk formula ROA, ROE, ROIC, DER, dan rasio finansial lainnya.
+Daftar pustaka berikut menggunakan format APA edisi ke-7. Referensi CFA Institute digunakan untuk rasio likuiditas, solvabilitas, profitabilitas, ROA, dan ROE; Damodaran, Penman, serta Ross dkk. digunakan untuk metrik valuasi, ROIC, dan arus kas; sedangkan Tsay digunakan untuk return dan volatilitas data harga.
+
+Business Quant. (n.d.). *Business Quant API documentation*. Retrieved August 10, 2026, from https://businessquant.com/docs/api/
+
+CFA Institute. (2026). *Financial analysis techniques*. https://www.cfainstitute.org/insights/professional-learning/refresher-readings/2026/financial-analysis-techniques
+
+Damodaran, A. (2007). *Return on capital (ROC), return on invested capital (ROIC), and return on equity (ROE): Measurement and implications*. Stern School of Business, New York University. https://pages.stern.nyu.edu/~adamodar/pdfiles/papers/returnmeasures.pdf
+
+Damodaran, A. (n.d.). *Financial measures and ratios*. Stern School of Business, New York University. Retrieved August 10, 2026, from https://pages.stern.nyu.edu/~adamodar/New_Home_Page/definitions.html
+
+Google. (n.d.). *Gemini API documentation*. Retrieved August 10, 2026, from https://ai.google.dev/gemini-api/docs
+
+Next.js. (n.d.). *Next.js documentation*. Retrieved August 10, 2026, from https://nextjs.org/docs
+
+Penman, S. H. (2013). *Financial statement analysis and security valuation* (5th ed.). McGraw-Hill Education.
+
+Profit.com. (n.d.). *Data API documentation*. Retrieved August 10, 2026, from https://api.profit.com/
+
+Ross, S. A., Westerfield, R. W., & Jordan, B. D. (2022). *Fundamentals of corporate finance* (13th ed.). McGraw-Hill Education.
+
+Tsay, R. S. (2010). *Analysis of financial time series* (3rd ed.). John Wiley & Sons.
+
+Vercel. (n.d.). *Vercel documentation*. Retrieved August 10, 2026, from https://vercel.com/docs
 
 # LAMPIRAN
 

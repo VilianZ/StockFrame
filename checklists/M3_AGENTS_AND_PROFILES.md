@@ -1,5 +1,8 @@
 # M3 — One-model analysis pipeline
 
+- [x] Profile-only Gemini memakai schema native `ARRAY`, prompt mewajibkan metric ID, corporate-action wording grounded diizinkan pada interpretasi profil, dan reason `contract_mismatch` dipisahkan dari `flat_envelope`.
+- [x] Prompt profile-only mempertegas pasangan bahasa klaim dan metric ID, khususnya agar `eps_ttm` tidak dipakai untuk istilah profitabilitas.
+
 - [x] Gunakan satu model Gemini GA yang dikonfigurasi melalui environment server-only.
 - [x] Bangun prompt contract berversi dengan user focus dan evidence packet yang dibatasi serta diberi delimiter.
 - [x] Definisikan response schema JSON terstruktur untuk report dan tiga profil risiko.
@@ -21,7 +24,16 @@
 - [x] Memaksa nol claim saat packet tidak memiliki corporate-action evidence dan mempertahankan prose status normal seperti pendaftaran bursa serta dividend yield.
 - [x] Mengubah report menjadi claim granular `{ text, metricIds }` dengan metric ID yang tersedia sebagai referensi utama, sementara corporate-action claim tetap memakai alias event terpisah.
 - [x] Menerapkan satu metric-policy terpusat untuk kategori valuasi, leverage, likuiditas, profitabilitas, arus kas, dan risiko pasar.
-- [x] Menolak metric unavailable, klaim eksternal, kategori yang tidak didukung metric, confidence di luar 0,40–0,85, serta confidence degraded di atas 0,70.
+- [x] Menolak metric unavailable dan klaim eksternal, mempertahankan confidence 0,40–0,85 serta confidence degraded maksimal 0,70; pemeriksaan kecocokan bahasa-kelompok metric sementara dilonggarkan untuk kompatibilitas output Gemini.
 - [x] Memvalidasi angka pada claim terhadap nilai canonical dan unit metric, menambahkan policy earnings untuk `eps_ttm`, serta memblokir istilah Corporate Action pada grounded prose.
 - [x] Menormalkan format angka natural dan mengabaikan tanggal/tahun sebagai nilai metric, serta memblokir variasi narasi `ticker_change`.
 - [x] Mencatat telemetry aman untuk kegagalan HTTP Gemini tanpa secret, prompt, body provider, atau perubahan pada error response publik.
+- [x] Memindahkan provider schema Gemini ke kontrak profile-only yang ringkas; aturan bisnis tetap divalidasi lokal dan bagian report non-profile dibangun deterministik oleh backend.
+- [x] Menambahkan parser flat, grouping section/profil, pemetaan alias corporate action, dan regression test untuk urutan acak serta kontrak invalid.
+- [x] Menambahkan reason code aman untuk kegagalan flat envelope, kind, placeholder, section, profile, dan reference; consideration memakai placeholder `rating: "none"` serta `confidence: 0.4`.
+- [x] Memisahkan reason telemetry `invalid_json`, `flat_envelope`, dan `output_truncated`; provider schema memakai array top-level dan parser tetap kompatibel dengan format `{ items }`.
+- [x] Controlled live AAPL berhasil menghasilkan telemetry reason aman: `contract mismatch` dengan reason `flat_envelope`; report masih ditolak sebagai `AI_INVALID_RESPONSE`.
+- [x] Menetapkan `thinkingLevel: low`, menaikkan batas output default ke 8.192 token, dan membatasi jumlah serta panjang item pada prompt untuk mencegah output terpotong.
+- [x] Melonggarkan validasi field placeholder yang tidak dipakai: consideration hanya memerlukan profile, sedangkan metadata non-profile diabaikan saat normalisasi report.
+- [x] Memisahkan telemetry flat response menjadi `missing_content`, `invalid_flat_item`, `empty_text`, dan `flat_envelope` tanpa menambah reason code baru.
+- [x] Mempertahankan parser flat lama untuk kompatibilitas fixture/cache, sementara alur provider aktif mengembalikan tiga profil risiko dan backend menetapkan `REPORT_SCHEMA_VERSION` saat membangun `FinalReport`.

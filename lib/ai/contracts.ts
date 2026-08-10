@@ -7,6 +7,23 @@ export type AiFailureCode =
   | "AI_UNAVAILABLE"
   | "AI_INVALID_RESPONSE";
 
+export const AI_VALIDATION_REASON_CODES = [
+  "invalid_json",
+  "flat_envelope",
+  "missing_content",
+  "invalid_flat_item",
+  "empty_text",
+  "output_truncated",
+  "unknown_kind",
+  "placeholder_mismatch",
+  "contract_mismatch",
+  "missing_section",
+  "profile_mismatch",
+  "reference_mismatch",
+] as const;
+
+export type AiValidationReason = (typeof AI_VALIDATION_REASON_CODES)[number];
+
 export interface AiFailureTelemetry {
   requestId: string;
   modelId: string;

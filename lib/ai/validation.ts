@@ -1,6 +1,6 @@
-import { FinalReportSchema, type FinalReport } from "../domain";
+import { AiInterpretationSchema, FinalReportSchema, type FinalReport, type ProfileRecommendation } from "../domain";
 import type { EvidencePacket } from "../quality";
-import { AiError } from "./contracts";
+import { AiError, type AiValidationReason } from "./contracts";
 import { validateMetricClaimNumbers, validateMetricClaimPolicy } from "./metric-policy";
 
 const DEGRADED_CONFIDENCE_CAP = 0.7;
@@ -26,6 +26,19 @@ export const MODEL_VALIDATION_FAILURE_CATEGORIES = [
 
 export type ModelValidationFailureCategory = (typeof MODEL_VALIDATION_FAILURE_CATEGORIES)[number];
 export type ModelValidationFailureLogger = (category: ModelValidationFailureCategory) => void;
+
+export function validationReasonForCategory(category: ModelValidationFailureCategory): AiValidationReason {
+  switch (category) {
+    case "unknown evidence":
+      return "reference_mismatch";
+    case "confidence violation":
+      return "profile_mismatch";
+    case "unsafe language":
+      return "placeholder_mismatch";
+    case "contract mismatch":
+      return "contract_mismatch";
+  }
+}
 
 function reportText(report: FinalReport): string {
   return [
@@ -98,6 +111,49 @@ function rejectValidation(
 ): never {
   onFailure?.(category);
   throw new AiError("AI_INVALID_RESPONSE", message, false);
+}
+
+function validateProfileClaims(
+  profiles: Record<string, ProfileRecommendation>,
+  packet: EvidencePacket,
+  onFailure?: ModelValidationFailureLogger,
+): void {
+  const availableMetricIds = new Set(
+    packet.metrics.filter((metric) => metric.status === "available").map((metric) => metric.id),
+  );
+  for (const profile of Object.values(profiles)) {
+    for (const claim of [profile.thesis, ...profile.considerations]) {
+      if (claim.metricIds.some((id) => !availableMetricIds.has(id))) {
+        rejectValidation("unknown evidence", "Model output referenced an unknown or unavailable metric", onFailure);
+      }
+      const policyError = validateMetricClaimPolicy(claim.text, claim.metricIds);
+      if (policyError) rejectValidation("contract mismatch", policyError, onFailure);
+      const numericError = validateMetricClaimNumbers(claim.text, claim.metricIds, packet.metrics);
+      if (numericError) rejectValidation("contract mismatch", numericError, onFailure);
+    }
+    if (containsUnsafeTradingLanguage([profile.thesis.text, ...profile.considerations.map((claim) => claim.text)].join("\n"))) {
+      rejectValidation("unsafe language", "Model output contained disallowed trading instructions", onFailure);
+    }
+  }
+  if (packet.quality.decision === "degraded" && Object.values(profiles).some((profile) => profile.confidence > DEGRADED_CONFIDENCE_CAP)) {
+    rejectValidation("confidence violation", "Degraded quality confidence cap was not preserved", onFailure);
+  }
+}
+
+export function validateModelInterpretation(
+  input: unknown,
+  packet: EvidencePacket,
+  onFailure?: ModelValidationFailureLogger,
+) {
+  if (hasOutOfRangeConfidence(input)) {
+    rejectValidation("confidence violation", "Model output contained an out-of-range confidence", onFailure);
+  }
+  const parsed = AiInterpretationSchema.safeParse(input);
+  if (!parsed.success) {
+    rejectValidation("contract mismatch", "Model output did not match the interpretation contract", onFailure);
+  }
+  validateProfileClaims(parsed.data.profiles, packet, onFailure);
+  return parsed.data.profiles;
 }
 
 export function validateModelReport(

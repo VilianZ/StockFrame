@@ -600,3 +600,813 @@
 - **Decisions / blockers:** Error provider hanya diekstrak dari field code/status/message yang dipilih, dibatasi panjangnya, dan dirahasiakan dari client. Tidak ada blocker.
 - **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
   - [x] Safe failure telemetry Gemini dan regression test redaksi secret selesai.
+
+## Timestamp: 2026-08-08 20:54:13 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Mulai Milestone F0 frontend StockFrame dengan membekukan arah Black Frame / Lime Signal, memetakan kontrak response ke presentation layer, menetapkan policy visualisasi deterministik, dan menyiapkan fixture serta test tanpa mengubah backend atau melakukan live call.
+- **TLDR AI agents done:** DESIGN.md diperbarui untuk mode Persuade/Operate dan palet lime/black. Presentation layer pure TypeScript kini mencakup catalog 16 metric, label/group/unit formatter, quality, risk, Corporate Actions, error copy, historical-price presentation, dan visualization policy dengan scalar fallback. Fixture contract-valid untuk success, degraded, error, enrichment, metric status, serta chart eligibility ditambahkan; injection Impeccable sementara dihapus dari layout.
+- **Milestone:** F0 — Freeze Presentation Contracts and Reset Direction
+- **Files changed:**
+  - `DESIGN.md`, `app/layout.tsx`
+  - `lib/presentation/metric-catalog.ts`, `formatters.ts`, `quality.ts`, `risk.ts`, `corporate-actions.ts`, `error-copy.ts`, `historical-price.ts`, `visualization-policy.ts`, `index.ts`
+  - `lib/fixtures/analyze-success.ts`, `analyze-degraded.ts`, `analyze-errors.ts`, `presentation.ts`, `index.ts`
+  - `tests/unit/presentation.test.ts`, `checklists/F0_PRESENTATION_CONTRACTS.md`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa error atau warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 114 test.
+  - `npm run build`: Lulus; `/api/analyze` tetap dynamic server route.
+  - `git diff --check`: Lulus.
+  - Impeccable detector pada `app/layout.tsx`: tidak menemukan temuan.
+  - Tidak ada live Business Quant atau Gemini call.
+- **Decisions / blockers:** Tidak menambah dependency pada F0; native TypeScript, `Intl`, dan schema production sudah cukup. F0 berhenti pada presentation contracts dan tidak mengimplementasikan UI F1. Tidak ada blocker.
+- **Checklist:** `checklists/F0_PRESENTATION_CONTRACTS.md`
+  - [x] Arah visual, presentation mappings, visualization policy, fixtures, tests, dependency decision, dan full validation selesai.
+
+## Timestamp: 2026-08-08 18:32:19 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Buat tampilan live StockFrame agar arah desain frontend dapat dilihat langsung, dengan halaman pengenalan bergaya SaaS yang berlanjut ke contoh workspace analisis saham, menggunakan data fixture yang transparan dan tetap membedakan data pasar, hasil kalkulasi engine, serta interpretasi AI.
+- **TLDR AI agents done:** Baseline visual “Signal Ledger” diimplementasikan sebagai landing page dan workspace analisis responsif. Tampilan mencakup form riset, pratinjau hasil, grafik historis satu tahun, metrik utama, tiga profil risiko, temuan, corporate actions, disclaimer, serta konfigurasi Impeccable Live untuk iterasi visual langsung.
+- **Milestone:** F0 — Frontend visual foundation
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `app/layout.tsx`
+  - `DESIGN.md`
+  - `.impeccable/live/config.json`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 8 berkas dan 103 test.
+  - `npm run build`: Lulus; halaman `/` statis dan `/api/analyze` tetap dynamic.
+  - `git diff --check`: Lulus.
+  - Pemeriksaan visual desktop 1440×1000 dan mobile 390×844: Komposisi utama tampil responsif dan Impeccable Live terhubung.
+- **Decisions / blockers:** Nilai AAPL pada halaman adalah fixture yang diberi label sebagai pratinjau data contoh; integrasi form dengan `/api/analyze` belum dilakukan pada tahap visual foundation. Tidak ada blocker.
+- **Checklist:** Tidak ada checklist milestone lama yang diperbarui; task ini memulai fondasi frontend terpisah dari M0–M4.
+
+## Timestamp: 2026-08-09 07:13:46 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki gap kontrak F0 sebelum melanjutkan F1: pisahkan grouping metrik presentation dari policy backend, validasi currency pada visualisasi capital structure, selaraskan fixture Corporate Actions yang kosong, dan buat ringkasan harga historis menyertakan mata uang.
+- **TLDR AI agents done:** Mapping lima kelompok riset frontend dibuat eksplisit dan independen dari policy AI. Capital structure kini menolak currency mismatch. Fixture degraded dan empty Corporate Actions tidak lagi membawa claim atau evidence event. Text equivalent harga memakai formatter currency-aware.
+- **Milestone:** F0 — Frontend visual foundation
+- **Files changed:**
+  - `lib/presentation/metric-catalog.ts`
+  - `lib/presentation/visualization-policy.ts`
+  - `lib/presentation/historical-price.ts`
+  - `lib/fixtures/analyze-success.ts`
+  - `lib/fixtures/analyze-degraded.ts`
+  - `tests/unit/presentation.test.ts`
+  - `checklists/F0_PRESENTATION_CONTRACTS.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Grouping presentation tidak memakai tipe policy AI. Entry lama yang posisinya tidak kronologis tidak dipindah atau ditulis ulang; entry ini ditambahkan di akhir untuk mempertahankan append-only. Tidak ada blocker.
+- **Checklist:** `checklists/F0_PRESENTATION_CONTRACTS.md`
+  - [x] Review hardening F0 selesai dan tidak melanjutkan implementasi F1.
+## Timestamp: 2026-08-09 07:33:40 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Lanjutkan F1 frontend StockFrame dengan arah visual Black Frame / Lime Signal seperti referensi: hero identitas yang kuat, manifesto lime, alur metode yang jelas, reading guide berbasis evidence, dan transisi menuju meja riset.
+- **TLDR AI agents done:** Baseline homepage diganti menjadi pengantar F1 yang responsif. Header minimal, layered evidence artifact, signal line, manifesto, narrative Data → Engine → Interpretasi, reading guide, research desk transition, focus ring, skip link, dan reduced-motion support sudah dibuat.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `app/layout.tsx`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+  - Review visual desktop: Lulus; tidak ada overflow atau mechanical detector finding yang tersisa setelah perbaikan logo.
+- **Decisions / blockers:** F1 berhenti pada identity dan introduction. Submit API, ambiguity, loading/error state, dan report renderer tetap menjadi F2/F3. Tidak ada live provider call dan tidak ada blocker.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Identity, hero, manifesto, methodology, reading guide, research transition, dan responsive rules selesai.
+  - [ ] Interaksi analisis dan report renderer belum termasuk F1.
+## Timestamp: 2026-08-09 11:34:53 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup acceptance gap F1 dengan memberi label pada seluruh angka ilustratif, menghapus affordance research desk yang belum berfungsi, menyelaraskan checklist dengan hasil detector, dan mencatat keterbatasan review mobile.
+- **TLDR AI agents done:** Artifact hero, contoh methodology, dan reading guide kini menampilkan penanda `Ilustrasi · bukan data live`. Research desk diberi status `Pratinjau F1`, shortcut yang tidak berfungsi dihapus, dan CTA `Susun analisis` menjadi state non-interaktif yang jujur sampai F2.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+  - Impeccable detector: 0 temuan.
+- **Decisions / blockers:** Review mobile independen pada viewport 390px belum dapat dibuktikan karena kontrol viewport browser tidak tersedia pada sesi ini; responsive CSS tetap dipertahankan dan status dicentang terpisah di checklist. Belum ada live provider call atau commit Git.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Label ilustrasi, placeholder CTA, dan detector status diselaraskan.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+## Timestamp: 2026-08-09 12:22:44 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Hilangkan istilah milestone internal dari label, aria-label, dan status research desk agar copy F1 mudah dipahami pengguna umum.
+- **TLDR AI agents done:** Copy research desk kini memakai `Meja riset`, `Pratinjau meja riset`, dan `Form analisis segera tersedia` tanpa menyebut F1 atau F2.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus dengan warning normal line-ending Git.
+  - Impeccable detector: 0 temuan.
+- **Decisions / blockers:** Review mobile independen pada viewport 390px masih terbuka karena kontrol viewport browser belum tersedia; perubahan belum di-commit.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Copy publik research desk bebas dari istilah milestone internal.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 13:48:57 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki build error Unterminated regexp literal setelah sesi Impeccable Live dan pastikan halaman F1 kembali valid.
+- **TLDR AI agents done:** Memulihkan source `app/page.tsx` dari source map build F1 terakhir yang valid, menghapus kerusakan JSX sisa cleanup Live, dan mempertahankan copy publik F1 yang sudah disepakati.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Varian Impeccable Live tidak dipersistenkan karena sesi cleanup merusak JSX; source dipulihkan dari artefak build lokal yang tervalidasi. Review mobile 390px masih terbuka dan perubahan belum di-commit.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Build regression akibat JSX rusak dipulihkan dan divalidasi.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:20:40 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Sesuaikan komposisi hero berdasarkan referensi: hapus semua label ilustrasi, hilangkan bidang putih tanpa menghapus isi Interpretasi AI, perbesar grafik, dan cegah label Interpretasi bertumpuk dengan konten lain.
+- **TLDR AI agents done:** Menghapus seluruh copy ilustrasi, menghilangkan bidang putih, mengembalikan Interpretasi AI sebagai teks bebas tanpa background, memperbesar grafik utama, dan memindahkan label Interpretasi agar terpisah dari kartu metrik.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal: grafik besar, tanpa bidang putih, dan Interpretasi AI tidak bertumpuk.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Interpretasi AI tetap dipertahankan sebagai teks bebas sesuai klarifikasi pengguna; review viewport mobile 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Komposisi hero diselaraskan dengan referensi visual terbaru.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:24:39 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Koreksi komposisi hero agar kartu putih Interpretasi AI tetap ada, garis kotak abu-abu yang mengganggu dihapus, grafik tetap besar, dan label Interpretasi tidak bertumpuk dengan kartu.
+- **TLDR AI agents done:** Menghapus dua elemen orbit abu-abu, mengembalikan kartu putih Interpretasi AI, menempatkannya di atas area grafik dengan ukuran terbatas, dan memisahkan label Interpretasi dari kartu.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal: kartu putih Interpretasi AI terlihat, garis orbit abu-abu hilang, grafik tetap dominan, dan label terpisah.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Kartu putih dipertahankan sesuai klarifikasi pengguna; review viewport mobile 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Kartu Interpretasi AI dan grafik disusun tanpa dekorasi orbit yang mengganggu.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:30:30 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Atur ulang hero agar grafik berada di atas dan kartu putih Interpretasi AI berada di bawahnya, lalu hapus box lime bertuliskan Interpretasi.
+- **TLDR AI agents done:** Menaikkan posisi grafik, menurunkan kartu putih Interpretasi AI ke bawah grafik, dan menghapus label lime Interpretasi tanpa mengubah isi kartu atau data sumber.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal: grafik berada di atas kartu Interpretasi AI dan label lime Interpretasi sudah hilang.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Kartu putih Interpretasi AI dipertahankan sesuai arahan terbaru; review viewport mobile 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Hierarki grafik dan kartu Interpretasi AI disusun ulang.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:33:10 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Ubah grafik agar tidak tampak melayang, tetapi menjadi garis besar yang menempel dari bawah kiri dan naik melintasi hero seperti referensi coretan biru.
+- **TLDR AI agents done:** Mengikat grafik ke bagian bawah hero, memperbesar tinggi dan rentang visualnya, serta mempertahankan kartu putih Interpretasi AI di bawah jalur grafik.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal: grafik menempel dari bawah kiri dan naik melintasi area hero.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Kartu putih Interpretasi AI tetap berada di bawah grafik; review viewport mobile 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Grafik hero dibuat besar dan terikat ke bagian bawah komposisi.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 14:13:43 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Terapkan penyempurnaan visual artifact hero agar hanya memakai satu grafik yang jelas, tidak tertutup Interpretasi AI, dan tidak menampilkan kotak lime maupun label Kalkulasi yang mengganggu.
+- **TLDR AI agents done:** Menghapus frame lime dan grafik mini kedua, memperbesar keterbacaan grafik utama, menurunkan serta mengecilkan lembar Interpretasi AI, mempertahankan label ilustrasi untuk kejujuran data, dan memperbaiki karakter mojibake pada copy F1.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal: grafik tunggal terlihat dan tidak tertutup panel Interpretasi AI.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Label `Ilustrasi · bukan data live` dipertahankan karena angka contoh masih ditampilkan; review viewport 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Artifact hero memakai satu grafik utama tanpa frame lime dan label Kalkulasi.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:40:37 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perbaiki posisi panah hijau pada alur metodologi agar tidak menabrak nomor dan label langkah berikutnya di desktop maupun mobile.
+- **TLDR AI agents done:** Memusatkan dan memperpendek separator panah di ruang antar-kolom, serta memberi inset tambahan pada layout mobile agar jaraknya tetap aman.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal desktop dan mobile: panah tidak lagi menyentuh nomor atau label langkah berikutnya.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Review viewport mobile 390px penuh dan commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Separator panah metodologi tidak overlap dengan langkah berikutnya.
+  - [ ] Review viewport mobile 390px tetap terbuka.
+
+## Timestamp: 2026-08-09 17:47:25 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Pindahkan panah hijau dari area nomor dan label langkah ke sela antara paragraf penjelasan dan kartu contoh seperti pada referensi visual.
+- **TLDR AI agents done:** Menurunkan kedua panah separator ke area transisi sebelum kartu contoh pada desktop, menjaga aturan mobile, dan menyelesaikan review viewport 390px.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/globals.css`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal desktop: panah berada di sela paragraf dan kartu contoh.
+  - Review browser lokal viewport 390px: alur mobile tetap rapi dan tidak overlap.
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 9 berkas dan 115 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Panah metodologi dipindahkan ke area transisi sebelum kartu contoh.
+  - [x] Review viewport mobile 390px selesai.
+
+## Timestamp: 2026-08-09 18:01:36 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Naikkan posisi panah metodologi sedikit dan geser sedikit ke kiri dari posisi sebelumnya.
+- **TLDR AI agents done:** Menggeser separator panah ke atas 25px dan ke kiri 8px pada layout desktop, sementara aturan mobile tetap dipertahankan.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/globals.css`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - Review browser lokal desktop: panah berada sedikit lebih tinggi dan ke kiri sesuai referensi.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Posisi separator panah disesuaikan dengan referensi visual.
+
+## Timestamp: 2026-08-09 20:15:18 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Ganti headline utama menjadi “Riset saham. Pahami perusahaannya.” dan perbaiki copy panduan agar lebih masuk akal.
+- **TLDR AI agents done:** Mengubah headline hero serta judul reading guide menjadi “Pahami hasilnya. Telusuri buktinya.”, lalu menyelaraskan contoh tagline pada frontend spec.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `docs/FRONTEND_SPEC.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Impeccable detector: 0 temuan.
+  - `npm run lint`: Lulus pada validasi perubahan headline.
+  - `npm run typecheck`: Lulus pada validasi perubahan headline.
+  - `npm run test`: Lulus, 115/115 pada validasi perubahan headline.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - Copy lama tidak lagi ditemukan pada app maupun dokumentasi frontend.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:** Commit Git masih terbuka.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Headline dan reading guide memakai copy produk yang lebih jelas.
+
+## Timestamp: 2026-08-09 20:27:01 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Lanjutkan F2 dengan membangun meja riset interaktif, pengiriman request analisis, serta state loading, ambiguity, success, dan error yang konsisten dengan kontrak backend.
+- **TLDR AI agents done:** Menambahkan research desk sebagai client boundary terfokus dengan input terkontrol, validasi request, submit ke `/api/analyze`, pembatalan request, pencegahan duplicate submit, status aksesibel, pemilihan kandidat instrumen ambigu, dan handoff success tanpa mengubah response publik backend.
+- **Milestone:** F2 — Research Desk dan Request State
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/research-desk.tsx`
+  - `app/globals.css`
+  - `lib/presentation/analysis-state.ts`
+  - `tests/unit/frontend-state.test.ts`
+  - `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 10 berkas dan 120 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - Impeccable detector: 0 temuan.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:**
+  - Report renderer dan workspace laporan lengkap tetap menjadi scope F3.
+  - Tidak ada live call ke Business Quant atau Gemini; seluruh validasi memakai fixture dan kontrak lokal.
+  - Commit Git masih terbuka.
+- **Checklist:** `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+  - [x] Research desk dan request state selesai serta tervalidasi.
+  - [x] Regression test state request dan response API ditambahkan.
+  - [ ] Report renderer dan workspace laporan lengkap menunggu F3.
+
+## Timestamp: 2026-08-09 20:44:54 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Tutup gap acceptance F2 pada recovery error, ambiguity, dan interaction testing, lalu rapikan hero mobile serta metafora visual agar tidak menyerupai prediksi harga.
+- **TLDR AI agents done:** Membedakan recovery retry/edit/tanpa tombol sesuai sumber error, menambahkan aksi `Ubah pencarian` untuk ambiguity, menguji interaction contract untuk duplicate submit, cancel, preserved values, loading, candidate resubmission, dan recovery visibility, serta mengganti garis hero menjadi alur Data–Engine–Interpretasi dengan layout mobile yang tidak memotong konten.
+- **Milestone:** F2 — Research Desk dan Request State
+- **Files changed:**
+  - `app/research-desk.tsx`
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `lib/presentation/analysis-state.ts`
+  - `tests/unit/frontend-state.test.ts`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 10 berkas dan 123 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - Impeccable detector: 0 temuan.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:**
+  - Tidak ada live provider/Gemini call.
+  - Visual review manual viewport 390px perlu dilakukan ulang setelah perubahan hero; checklist F1 sengaja belum mencentangnya.
+  - Report renderer tetap menjadi scope F3 dan commit Git masih terbuka.
+- **Checklist:** `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+  - [x] Recovery action, ambiguity recovery, dan interaction contract diperketat.
+  - [x] Regression test bertambah menjadi 123 test.
+  - [ ] Report renderer dan workspace laporan lengkap menunggu F3.
+
+## Timestamp: 2026-08-09 21:00:11 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Ringkas schema structured output Gemini yang terlalu kompleks agar model `gemini-3.1-flash-lite` dapat menerima kontrak report tanpa mengubah API publik, validasi domain, atau perilaku one-call.
+- **TLDR AI agents done:** Mengganti schema provider menjadi `responseJsonSchema` ringkas dengan `$defs` reusable, metric ID dan evidence alias sebagai string yang divalidasi lokal, profil sebagai array tiga item, serta normalisasi deterministik kembali ke kontrak profil publik. Prompt, dokumentasi, test adapter, checklist M3, dan validasi tanpa live call diperbarui.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/gemini.ts`
+  - `lib/ai/prompt.ts`
+  - `tests/unit/ai.test.ts`
+  - `docs/BACKEND_SPEC.md`
+  - `docs/BACKEND_IMPLEMENTATION_PLAN.md`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 10 berkas dan 123 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+- **Decisions / blockers:**
+  - Tidak ada live Gemini/provider call; diagnosis 400 tetap harus dikonfirmasi pada controlled live test berikutnya.
+  - Kontrak report publik tetap memakai object profil `conservative`, `moderate`, dan `aggressive`; hanya wire format provider yang memakai array.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+- [x] Schema provider Gemini dipadatkan dengan `$defs` dan normalisasi array profil.
+- [x] Regression test schema compact dan one-call tetap lulus.
+
+## Timestamp: 2026-08-09 21:25:30 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Ganti schema structured output Gemini yang masih ditolak menjadi satu protocol flat berbasis array item, pertahankan satu panggilan, validasi lokal, kontrak API, dan lakukan live smoke test AAPL.
+- **TLDR AI agents done:** Mengganti schema nested menjadi `items[]` dengan tipe dasar saja, menambahkan parser dan normalizer flat untuk cardinality section, profil, rating, confidence, metric reference, serta corporate-action alias, menaikkan prompt ke `m3.ai-prompt.6`, memperbarui dokumentasi dan regression test, lalu menjalankan live smoke test.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/gemini.ts`
+  - `lib/ai/prompt.ts`
+  - `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `docs/BACKEND_SPEC.md`
+  - `docs/BACKEND_IMPLEMENTATION_PLAN.md`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: Lulus tanpa warning.
+  - `npm run typecheck`: Lulus.
+  - `npm run test`: Lulus, 10 berkas dan 134 test.
+  - `npm run build`: Lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: Lulus.
+  - Live AAPL: HTTP 502 `AI_INVALID_RESPONSE`; schema request diterima tetapi report model belum lolos validasi lokal.
+- **Decisions / blockers:**
+  - Tetap satu panggilan Gemini dan tidak menambahkan repair/retry AI.
+  - Kontrak API/frontend dan `FinalReportSchema` tidak berubah.
+  - Controlled live test belum selesai karena output flat dari model masih ditolak; raw output tidak disimpan atau dicatat.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Parser flat, grouping section/profil, alias corporate action, dan regression test ditambahkan.
+  - [ ] Live AAPL berhasil menghasilkan report tervalidasi.
+
+## Timestamp: 2026-08-10 05:28:13 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Perinci observability kegagalan Gemini setelah flat schema berhasil, bedakan penyebab normalisasi dengan reason code aman, dan longgarkan kontrak consideration agar hanya memakai placeholder yang ditentukan.
+- **TLDR AI agents done:** Menambahkan tipe reason telemetry terbatas, error normalisasi bertipe dengan kategori `flat_envelope`, `unknown_kind`, `placeholder_mismatch`, `missing_section`, `profile_mismatch`, dan `reference_mismatch`, memisahkan validasi thesis dari consideration, serta mencatat telemetry server-side hanya sebagai request ID, kategori, dan reason.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/contracts.ts`
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/gemini.ts`
+  - `lib/ai/validation.ts`
+  - `app/api/analyze/route.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm test -- --run tests/unit/ai.test.ts`: Lulus, 49/49 test.
+  - `npm run typecheck`: Lulus.
+  - Live route check: halaman lokal merespons, tetapi `POST /api/analyze` mengembalikan 404 sehingga belum menghasilkan telemetry Gemini.
+- **Decisions / blockers:**
+  - Tidak mencatat raw output Gemini, prompt, provider body, secret, atau credential.
+  - Verifikasi live AAPL tetap terbuka sampai route lokal tersedia dan menghasilkan response dari Gemini.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Reason code telemetry dan placeholder consideration ditambahkan serta diuji.
+  - [x] Controlled live AAPL dengan telemetry reason terbaru.
+
+- **Final verification update:** Controlled live AAPL mencapai Gemini dan menghasilkan `AI_INVALID_RESPONSE` dengan telemetry aman `category: contract mismatch` serta `reason: flat_envelope`; tidak ada raw output atau secret yang dicatat.
+- **Validasi final tambahan:** `npm run lint`, `npm run typecheck`, `npm run test` (140/140), `npm run build`, dan `git diff --check` lulus.
+
+## Timestamp: 2026-08-10 05:43:55 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Bersihkan grafik hero dengan menghapus label DATA dan ENGINE yang tampil di sepanjang garis sinyal, tanpa menghilangkan kartu data sumber, metrik engine, atau interpretasi AI.
+- **TLDR AI agents done:** Menghapus seluruh teks label stage dari SVG grafik hero dan mengganti label aksesibilitasnya menjadi deskripsi garis sinyal visual yang netral.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Detector Impeccable akan dijalankan setelah perubahan UI selesai.
+  - Visual target: grafik tetap memiliki garis, rule, dan titik sinyal; label DATA/ENGINE/INTERPRETASI tidak lagi dirender.
+- **Decisions / blockers:**
+  - Kartu `Data sumber`, `Metrik engine`, dan `Interpretasi AI` dipertahankan karena merupakan artefak utama hero.
+  - Review mobile 390px masih terbuka dari pekerjaan F1 sebelumnya.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Menghapus label stage dari grafik hero.
+  - [ ] Review visual mobile 390px.
+
+## Timestamp: 2026-08-10 05:50:53 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Ubah grafik hero agar menyerupai garis biru zig-zag yang naik seperti referensi pengguna, serta buat scrollbar halaman custom supaya tidak mengganggu tampilan.
+- **TLDR AI agents done:** Mengganti garis lime datar menjadi satu polyline biru yang lebih panjang dan berzig-zag, menghapus rule/marker grafik, menempatkannya lebih rendah di hero, serta menambahkan scrollbar tipis dengan warna tema StockFrame dan state hover.
+- **Milestone:** F1 — Identity and Introduction
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `checklists/F1_IDENTITY_AND_INTRO.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Detector Impeccable: akan dijalankan setelah perubahan UI final.
+  - `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`, dan `git diff --check` dijalankan setelah patch.
+- **Decisions / blockers:**
+  - Garis biru diperlakukan sebagai visual abstrak, bukan data harga atau prediksi.
+  - Review visual mobile 390px tetap menjadi item terbuka dari F1.
+- **Checklist:** `checklists/F1_IDENTITY_AND_INTRO.md`
+  - [x] Grafik lime zig-zag dan scrollbar custom diterapkan.
+  - [ ] Review visual mobile 390px.
+
+- **Final correction:** Bentuk zig-zag dipertahankan, tetapi warna grafik dikembalikan ke Signal Lime agar konsisten dengan identitas visual StockFrame.
+- **Final visual correction:** Grafik hero kini memiliki dua lapisan seperti referensi lama: signal line lime, line grafik biru yang naik/zig-zag, serta tiga garis bantu dash abu-abu.
+- **Scrollbar correction:** Track dan sudut scrollbar dibuat transparan, panah scrollbar dihilangkan, dan hanya thumb lime yang terlihat agar menyatu dengan halaman.
+- **Validation final:** Lint, type-check, 140 test, build, detector Impeccable (0 temuan), dan `git diff --check` lulus.
+- **Graph correction:** Menghapus signal line lime terpisah; kini hanya ada satu garis grafik zig-zag naik dengan bentuk referensi lama dan warna lime, sementara dash abu-abu tetap dipertahankan.
+- **Graph realism correction:** Mengganti ritme zig-zag berulang dengan fluktuasi titik yang lebih organik, pullback kecil, dan glow lebih halus agar terbaca sebagai grafik saham ilustratif.
+- **Validation final:** Lint, type-check, 140 test, build, detector Impeccable (0 temuan), dan `git diff --check` lulus; halaman lokal merespons HTTP 200.
+
+## Timestamp: 2026-08-10 07:13:10 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Pisahkan kegagalan flat Gemini menjadi JSON invalid, envelope flat yang tidak sesuai, dan output terpotong; hilangkan versi internal dari payload model serta catat `finishReason` secara aman.
+- **TLDR AI agents done:** Menghapus `schemaVersion` dari kontrak provider dan schema Gemini, menetapkan `REPORT_SCHEMA_VERSION` hanya saat server membentuk report final, menambahkan reason code telemetry `invalid_json`, `flat_envelope`, dan `output_truncated`, serta mendeteksi `MAX_TOKENS` tanpa mencatat content model.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/contracts.ts`
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/gemini.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npx vitest run tests/unit/ai.test.ts`: 50/50 lulus.
+  - Gate penuh akan dijalankan setelah pencatatan perubahan ini.
+- **Decisions / blockers:**
+  - `finishReason` dibatasi ke enum Gemini yang aman; raw content, prompt, credential, dan body provider tidak dicatat.
+  - `REPORT_SCHEMA_VERSION` tetap menjadi tanggung jawab server.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Reason telemetry flat dibedakan dan schema provider tidak lagi memercayai versi report dari model.
+- **Validasi final:** `npm run lint`, `npm run typecheck`, `npm run test` (141/141 lulus), `npm run build`, dan `git diff --check` lulus.
+
+## Timestamp: 2026-08-10 09:42:54 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Mengurangi risiko output Gemini terpotong dengan thinking level rendah, batas token lebih longgar, dan instruksi prompt yang membatasi jumlah serta panjang item report.
+- **TLDR AI agents done:** Menaikkan batas output default Gemini menjadi 8.192 token, menambahkan `thinkingConfig.thinkingLevel: low`, memperketat instruksi cardinality dan panjang teks pada prompt, menaikkan versi prompt ke `m3.ai-prompt.7`, serta menambahkan regression assertion untuk konfigurasi tersebut.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini.ts`
+  - `lib/ai/prompt.ts`
+  - `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npx vitest run tests/unit/ai.test.ts`: 50/50 lulus.
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm run test`: 141/141 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live AAPL setelah restart: `AI_INVALID_RESPONSE` pada percobaan pertama, lalu `AI_UNAVAILABLE` pada percobaan berikutnya; tidak ada dasar aman untuk menaikkan cap ke 12.288 pada task ini.
+- **Decisions / blockers:**
+  - `thinkingLevel: low` dan 8.192 token dipertahankan sebagai konfigurasi awal; tidak mengubah schema provider atau melakukan repair call.
+  - Live provider masih belum menghasilkan report sukses; percobaan terakhir bukan `output_truncated`, sehingga diagnosis berikutnya memerlukan telemetry provider yang tersanitasi.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Batas output dan thinking Gemini dikendalikan untuk mengurangi risiko truncation.
+
+## Timestamp: 2026-08-10 09:53:17 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Menghindari kegagalan report akibat ketidakpatuhan pada field profile, rating, dan confidence yang hanya berfungsi sebagai placeholder pada output Gemini.
+- **TLDR AI agents done:** Normalizer kini tetap ketat pada profile thesis, hanya memeriksa profile dan metric references pada consideration, serta mengabaikan metadata placeholder pada item non-profile; regression test ditambahkan untuk membuktikan report tetap valid.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npx vitest run tests/unit/ai.test.ts`: 50/50 lulus.
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm run test`: 141/141 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live AAPL: HTTP 502 `AI_INVALID_RESPONSE`, request ID `7948c5c7-7aee-4894-aea8-761f3f9e3c07`; response publik tetap generic dan raw model output tidak dicatat.
+- **Decisions / blockers:**
+  - Field placeholder tidak dijadikan alasan penolakan karena server membentuk nilai canonical dari struktur yang tervalidasi.
+  - Live request masih belum sukses; reason server-side tidak terbaca dari wrapper live saat ini, sehingga penyebab lanjutan perlu diperiksa melalui telemetry aman yang berjalan di proses server.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Placeholder consideration dan item non-profile tidak lagi menggagalkan normalisasi report.
+
+## Timestamp: 2026-08-10 10:01:17 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Memisahkan penyebab kegagalan output flat Gemini agar content kosong, root envelope salah, item tidak valid, dan text kosong memiliki telemetry reason yang berbeda tanpa mengubah schema provider.
+- **TLDR AI agents done:** Menambahkan reason code telemetry baru, memetakan setiap cabang parser dan adapter ke kategori yang spesifik, serta menambahkan regression test tanpa mencatat raw output atau secret.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/contracts.ts`
+  - `lib/ai/gemini.ts`
+  - `lib/ai/gemini-schema.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npx vitest run tests/unit/ai.test.ts`: 53/53 lulus.
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm run test`: 144/144 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+- **Decisions / blockers:**
+  - Provider schema Gemini tidak diubah; root invalid tetap `flat_envelope`, item invalid menjadi `invalid_flat_item`, text kosong menjadi `empty_text`, dan content tidak tersedia menjadi `missing_content`.
+  - Live provider tidak dipanggil ulang pada task ini; tidak ada raw response atau credential yang dicatat.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Reason telemetry flat response dipisahkan dan diuji.
+
+## Timestamp: 2026-08-10 10:10:31 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Mengganti kontrak provider Gemini dari wrapper `{ items }` menjadi satu JSON array top-level, tetap menerima format lama di parser, memperbarui prompt, lalu melakukan controlled live test.
+- **TLDR AI agents done:** Schema Gemini kini berupa array berisi entry report; parser menerima array baru maupun wrapper lama; prompt meminta tepat satu JSON array; versi prompt internal dinaikkan tanpa menambah reason telemetry.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/prompt.ts`
+  - `lib/domain/versions.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 145/145 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live AAPL: HTTP 502 `AI_INVALID_RESPONSE`, request ID `f29140b4-a468-4562-9e1b-a29a56e81e4d`; tidak ada report.
+- **Decisions / blockers:**
+  - Public `FinalReport` tidak berubah dan reason telemetry tidak ditambah.
+  - Provider menerima schema array, tetapi live response masih gagal pada validasi lokal; investigasi berikutnya perlu memakai telemetry reason yang sudah ada, bukan memperluas kontrak lagi.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Kontrak provider array top-level dan kompatibilitas parser diuji.
+
+## Timestamp: 2026-08-10 10:46:23 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Mengadopsi arsitektur Gemini profile-only seperti implementasi referensi: model hanya mengembalikan interpretasi tiga profil risiko, sedangkan backend membangun bagian laporan lain secara deterministik. Parser fence JSON, validasi lokal, fallback JSON mode satu kali, dan kontrak `FinalReport` publik harus tetap kompatibel.
+- **TLDR AI agents done:** Mengubah alur provider Gemini menjadi profile-only, menambahkan normalisasi interpretasi dan pembentukan report deterministik, mempertahankan parser flat lama untuk kompatibilitas, serta menyelaraskan structured schema dengan format Gemini-native `responseSchema`.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/domain/schemas.ts`
+  - `lib/domain/contracts.ts`
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/deterministic-report.ts`
+  - `lib/ai/prompt.ts`
+  - `lib/ai/validation.ts`
+  - `lib/ai/gemini.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test -- --run`: 147/147 test lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live AAPL: route tetap mengembalikan HTTP 502 `AI_UNAVAILABLE`; probe provider tersanitasi menunjukkan HTTP 429 `RESOURCE_EXHAUSTED` karena quota Gemini habis, sehingga report live belum dapat diverifikasi.
+- **Decisions / blockers:**
+  - Gemini hanya dipercaya untuk tiga interpretasi profil risiko; summary, strengths, risks, uncertainties, limitations, corporate-action claims, dan disclaimer dibuat backend.
+  - Schema provider memakai `responseSchema` Gemini-native; fallback JSON mode satu kali untuk `400 INVALID_ARGUMENT` tetap dipertahankan.
+  - Public error response tetap generic dan tidak ada raw prompt, body provider, atau credential yang dicatat.
+  - Blocker tersisa adalah quota Gemini live (`429 RESOURCE_EXHAUSTED`), bukan kegagalan kontrak lokal.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Menggunakan kontrak profile-only dan report deterministik untuk mengurangi kompleksitas structured output Gemini.
+
+## Timestamp: 2026-08-10 11:12:38 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Menyamakan pipeline Gemini profile-only dengan implementasi referensi agar schema native, instruksi metric ID, validasi corporate-action prose, dan reason telemetry tidak saling bertentangan. Perubahan diuji lokal tanpa live request baru.
+- **TLDR AI agents done:** Membetulkan tipe provider `ARRAY`, mewajibkan setiap thesis dan consideration memiliki metric ID, mengizinkan corporate-action wording yang grounded pada interpretasi profil, serta memisahkan reason `contract_mismatch` dari `flat_envelope`.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/gemini-schema.ts`
+  - `lib/ai/prompt.ts`
+  - `lib/ai/validation.ts`
+  - `lib/ai/contracts.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test -- --run`: 148/148 test lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Tidak ada live API call baru.
+- **Decisions / blockers:**
+  - Parser flat tetap hanya untuk kompatibilitas legacy; alur aktif tetap profile-only.
+  - Corporate-action terms pada profile interpretation tidak lagi ditolak otomatis; provenance corporate action pada FinalReport tetap divalidasi.
+  - Reason contract umum kini `contract_mismatch`; `flat_envelope` dicadangkan untuk envelope flat legacy.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Menyamakan schema, prompt, validasi profile-only, dan klasifikasi reason telemetry.
+
+## Timestamp: 2026-08-10 10:59:20 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Mengadopsi tampilan frontend dari salinan StockFrame milik rekan ke workspace utama, dengan tetap mempertahankan Route Handler, metrics engine, dan pipeline AI yang sudah ada.
+- **TLDR AI agents done:** Mengganti halaman dan styling utama dengan Research Score Sheet hitam-lime beserta workspace laporan bertab, memperbarui metadata halaman, dan mengecualikan script live-development lokal milik sumber.
+- **Milestone:** F2 — Research Desk dan Request State
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `app/layout.tsx`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus tanpa warning.
+  - `npm run typecheck`: lulus setelah regenerasi tipe Next.js yang stale.
+  - `npm run test`: 147/147 test lulus.
+  - `npm run build`: lulus; route `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Visual review `http://localhost:3000/`: halaman Research Score Sheet hitam-lime tampil sesuai sumber.
+- **Decisions / blockers:**
+  - Backend, kontrak API, metrics engine, dan pipeline Gemini tidak disalin dari repository sumber.
+  - Script `impeccable live` yang menunjuk localhost sumber tidak disalin.
+  - Kriteria lama F1/F2 belum dicentang ulang karena baseline pilihan baru menempatkan form analisis pada viewport pertama dan menyederhanakan request state.
+- **Checklist:** Tidak ada item checklist yang diubah pada task ini.
+
+## Timestamp: 2026-08-10 11:33:40 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Periksa response Gemini yang ditolak dan sesuaikan kontrak prompt dengan pasangan istilah klaim serta metric ID yang benar.
+- **TLDR AI agents done:** Menjalankan controlled inspection tanpa menyimpan raw response; ditemukan struktur profile-only valid, tetapi dua consideration memakai `eps_ttm` untuk bahasa profitabilitas. Prompt diperketat agar istilah EPS, profitabilitas, valuasi, leverage, likuiditas, dan arus kas selalu selaras dengan metric ID yang dirujuk.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/prompt.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - Controlled Gemini inspection: HTTP 200, `STOP`, root `profiles` valid; rejection teridentifikasi sebagai `Claim requires profitability metrics`.
+  - Temporary inspection harness: lulus dan dihapus setelah diagnosis.
+  - Full lint, typecheck, test, dan build belum dijalankan setelah patch prompt.
+- **Decisions / blockers:**
+  - Validator tetap ketat; perbaikan diarahkan ke instruksi semantic grounding agar model menghasilkan klaim yang kompatibel.
+  - Tidak mencatat raw response, credential, atau secret. Live request berikutnya perlu dilakukan setelah gate lokal lulus.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Mempertegas pasangan bahasa klaim dan metric ID pada prompt profile-only.
+
+## Timestamp: 2026-08-10 11:43:21 WIB
+
+- **Model used:** Codex (exact model unavailable)
+- **Human Prompt:** Longgarkan sementara validator semantic grounding agar hasil analisis Gemini yang struktur, evidence, dan angka-nya valid dapat diterima untuk kebutuhan darurat.
+- **TLDR AI agents done:** Menonaktifkan sementara penolakan berdasarkan kecocokan bahasa dengan kelompok metric, sambil mempertahankan validasi metric tersedia, evidence, angka canonical, confidence, struktur profil, dan larangan klaim eksternal maupun instruksi transaksi.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/metric-policy.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test -- --run`: 148/148 lulus.
+  - `npm run build`: lulus.
+  - `git diff --check`: lulus.
+  - Controlled live AAPL request setelah restart: HTTP 200, report tersedia.
+- **Decisions / blockers:**
+  - Mode kompatibilitas semantic grounding bersifat sementara dan perlu diperketat kembali setelah output Gemini stabil.
+  - Validasi keamanan dasar dan provenance tetap aktif; tidak mencatat raw response atau credential.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Menandai mode kompatibilitas sementara untuk menerima wording Gemini yang tidak selaras sempurna dengan kelompok metric.

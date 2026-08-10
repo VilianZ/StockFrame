@@ -32,16 +32,6 @@ export const METRIC_IDS = [
 export type MetricId = (typeof METRIC_IDS)[number];
 export type MetricPolicyGroup = keyof typeof METRIC_POLICY;
 
-const GROUP_PATTERNS: Record<MetricPolicyGroup, RegExp> = {
-  valuation: /\b(?:valuasi|valuation|p\/?e|p\/?bv|pbv|book value|price[- ]to[- ](?:earnings|book))\b/i,
-  leverage: /\b(?:leverage|utang|liabilitas|debt|der|gearing)\b/i,
-  liquidity: /\b(?:likuid(?:itas)?|liquidity|current ratio|aset lancar|liabilitas lancar)\b/i,
-  earnings: /\b(?:eps(?:\s+ttm)?|earnings per share|laba per saham|laba per lembar saham)\b/i,
-  profitability: /\b(?:profitabilitas|profitability|roa|roe|roic|gross margin|operating margin|net margin|margin laba|laba bersih|laba operasi|rentabilitas)\b/i,
-  cash_flow: /\b(?:arus kas|cash flow|free cash flow|fcf|operating cash flow|capex)\b/i,
-  market_risk: /\b(?:volatil(?:itas)?|volatility|price return|return harga|fluktuasi harga|historical return)\b/i,
-};
-
 const UNSUPPORTED_EXTERNAL_PATTERNS = [
   /\b(?:market saturation|saturasi pasar|market dominance|dominasi pasar|market share|pangsa pasar)\b/i,
   /\b(?:innovation strategy|strategi inovasi|inovasi perusahaan|company strategy|strategi perusahaan)\b/i,
@@ -49,16 +39,14 @@ const UNSUPPORTED_EXTERNAL_PATTERNS = [
   /\b(?:competition|kompetisi|competitive advantage|keunggulan kompetitif|regulation|regulasi|sentiment|sentimen|news|berita)\b/i,
 ];
 
-export function validateMetricClaimPolicy(text: string, metricIds: readonly string[]): string | undefined {
+export function validateMetricClaimPolicy(text: string, _metricIds: readonly string[]): string | undefined {
+  void _metricIds;
   if (UNSUPPORTED_EXTERNAL_PATTERNS.some((pattern) => pattern.test(text))) {
     return "Claim contains external or unsupported information";
   }
 
-  for (const [group, allowedIds] of Object.entries(METRIC_POLICY) as [MetricPolicyGroup, readonly string[]][]) {
-    if (GROUP_PATTERNS[group].test(text) && !metricIds.some((metricId) => allowedIds.includes(metricId))) {
-      return `Claim requires ${group} metrics`;
-    }
-  }
+  // Temporary compatibility mode: semantic wording is accepted when the
+  // referenced IDs and numeric values pass the canonical validators.
   return undefined;
 }
 

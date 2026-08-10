@@ -191,6 +191,7 @@ Fixtures can produce a complete snapshot, metric set, evidence set, and quality 
 - Clearly delimit user focus and provider text as untrusted input.
 - Define one system instruction and one versioned prompt contract.
 - Request one structured final report containing all three risk perspectives.
+- Keep the Gemini provider schema flat with one basic `items` array and string references; move section cardinality, profile/rating rules, metric availability, and evidence membership into local validation before constructing the public report.
 - Validate model output before it enters the public response.
 - Reject unknown evidence IDs, unsupported ratings, missing profiles, and invalid confidence.
 - Use granular `{ text, metricIds }` claims for summary, strengths, risks, uncertainties, thesis, and considerations; only available metric IDs are allowed.
@@ -206,6 +207,8 @@ Fixtures can produce a complete snapshot, metric set, evidence set, and quality 
 ### Tests
 
 - A valid fake response produces one final report.
+- The flat provider schema uses only basic scalar/array/object types without nested profile sections or request-specific enums.
+- Flat items are grouped and normalized to the public conservative/moderate/aggressive profile object.
 - Normal success invokes the model adapter exactly once.
 - Malformed JSON and invalid schemas are rejected.
 - A schema failure makes no follow-up model call and returns a controlled error.

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createServerBusinessQuantProvider } from "../../../lib/market-data";
-import { GeminiAdapter } from "../../../lib/ai";
+import { GeminiAdapter, type AiValidationReason } from "../../../lib/ai";
 import {
   analyze,
   type AnalyzeDependencies,
@@ -28,10 +28,12 @@ export interface AnalyzeRouteOptions {
 function logGeminiValidationFailure(event: {
   requestId: string;
   category: "contract mismatch" | "unknown evidence" | "unsafe language" | "confidence violation";
+  reason: AiValidationReason;
 }): void {
   console.warn("[ai-validation]", JSON.stringify({
     requestId: event.requestId,
     category: event.category,
+    reason: event.reason,
   }));
 }
 
