@@ -1,6 +1,6 @@
 # M3 — One-model analysis pipeline
 
-- [x] Profile-only Gemini memakai schema native `ARRAY`, prompt mewajibkan metric ID, corporate-action wording grounded diizinkan pada interpretasi profil, dan reason `contract_mismatch` dipisahkan dari `flat_envelope`.
+- [x] Profile-only Gemini memakai schema native `ARRAY`, prompt mewajibkan metric ID, corporate-action wording dilarang pada interpretasi profil, dan reason `contract_mismatch` dipisahkan dari `flat_envelope`.
 - [x] Prompt profile-only mempertegas pasangan bahasa klaim dan metric ID, khususnya agar `eps_ttm` tidak dipakai untuk istilah profitabilitas.
 
 - [x] Gunakan satu model Gemini GA yang dikonfigurasi melalui environment server-only.

@@ -147,7 +147,7 @@ describe("Business Quant parser", () => {
     expect(parsed.historical.raw).not.toHaveProperty("data");
   });
 
-  test("resolves close-only conflicts by volume but rejects open/high/low conflicts", () => {
+  test("resolves duplicate conflicts by unique larger volume and rejects ambiguous ties", () => {
     const closeConflict = clone(prices) as unknown as PriceFixture;
     closeConflict.data.push({ ...closeConflict.data[0], close: 308, volume: 70000000 });
     const parsed = parseBusinessQuantPrices(closeConflict);
@@ -157,7 +157,13 @@ describe("Business Quant parser", () => {
 
     const ohlcConflict = clone(prices) as unknown as PriceFixture;
     ohlcConflict.data.push({ ...ohlcConflict.data[0], open: 303, volume: 70000000 });
-    expect(() => parseBusinessQuantPrices(ohlcConflict)).toThrowError(/conflicting OHLC/);
+    const ohlcParsed = parseBusinessQuantPrices(ohlcConflict);
+    expect(ohlcParsed.prices[0]).toMatchObject({ open: 303, volume: 70000000 });
+    expect(ohlcParsed.warnings).toContain("Duplicate EOD record with OHLC conflict resolved by larger volume for 2026-08-04");
+
+    const ambiguousConflict = clone(prices) as unknown as PriceFixture;
+    ambiguousConflict.data.push({ ...ambiguousConflict.data[0], open: 303, volume: ambiguousConflict.data[0].volume });
+    expect(() => parseBusinessQuantPrices(ambiguousConflict)).toThrowError(/without a unique volume winner/);
 
     const invalid = clone(prices) as unknown as PriceFixture;
     invalid.data[0].high = 300;

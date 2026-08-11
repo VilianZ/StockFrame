@@ -322,17 +322,24 @@ export function parseBusinessQuantPrices(input: unknown): {
       continue;
     }
     const sameOpenHighLow = ["open", "high", "low"].every((key) => previous[key as keyof BusinessQuantPricePoint] === point[key as keyof BusinessQuantPricePoint]);
-    if (!sameOpenHighLow) return malformed("Business Quant has conflicting OHLC rows for one date");
     const sameClose = previous.close === point.close;
     const previousVolume = previous.volume;
     const pointVolume = point.volume;
-    const pointHasLargerVolume = pointVolume !== null && (previousVolume === null || pointVolume > previousVolume);
-    if (pointHasLargerVolume) byDate.set(point.date, point);
-    if (sameClose) {
-      warnings.push(`Duplicate EOD record collapsed for ${point.date}`);
-    } else {
-      warnings.push(`Duplicate EOD record with close conflict resolved by volume for ${point.date}`);
+    const hasUniqueVolumeWinner = previousVolume !== null && pointVolume !== null && previousVolume !== pointVolume;
+    if (!sameOpenHighLow || !sameClose) {
+      if (!hasUniqueVolumeWinner) {
+        return malformed("Business Quant has conflicting OHLC rows for one date without a unique volume winner");
+      }
+      if (pointVolume > previousVolume) byDate.set(point.date, point);
+      warnings.push(
+        sameOpenHighLow
+          ? `Duplicate EOD record with close conflict resolved by volume for ${point.date}`
+          : `Duplicate EOD record with OHLC conflict resolved by larger volume for ${point.date}`,
+      );
+      continue;
     }
+    if (pointVolume !== null && (previousVolume === null || pointVolume > previousVolume)) byDate.set(point.date, point);
+    warnings.push(`Duplicate EOD record collapsed for ${point.date}`);
   }
   const prices = [...byDate.values()].sort((left, right) => right.date.localeCompare(left.date));
   const historical: HistoricalPriceRecord = {

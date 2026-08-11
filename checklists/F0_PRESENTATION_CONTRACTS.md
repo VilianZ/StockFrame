@@ -9,3 +9,4 @@
 - [x] Putuskan tidak menambah dependency pada F0; native TypeScript dan `Intl` cukup untuk presentation layer.
 - [x] Lulus full lint, typecheck, test, build, dan `git diff --check`.
 - [x] Menutup review hardening F0: grouping presentation terpisah dari policy AI, validasi currency capital structure, fixture Corporate Actions koheren, dan text equivalent harga currency-aware.
+- [x] Menyelaraskan report renderer dengan data response: metric canonical, currency instrumen, status enrichment, dan provenance evidence.

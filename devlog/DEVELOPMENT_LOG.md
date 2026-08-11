@@ -1460,3 +1460,75 @@
   - Validasi keamanan dasar dan provenance tetap aktif; tidak mencatat raw response atau credential.
 - **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
   - [x] Menandai mode kompatibilitas sementara untuk menerima wording Gemini yang tidak selaras sempurna dengan kelompok metric.
+
+## Timestamp: 2026-08-11 11:17:01 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Perbaiki frontend agar seluruh angka, mata uang, status aksi korporasi, dan jejak evidence mengikuti data analisis yang benar; jangan mengubah alur F2.
+- **TLDR AI agents done:** Menyelaraskan renderer report dengan metric canonical, formatter mata uang instrumen, status Corporate Actions, detail event, formula/evidence metric, dan ledger provenance tanpa menyentuh alur F2.
+- **Milestone:** F0 — Presentation contracts
+- **Files changed:**
+  - `app/page.tsx`
+  - `checklists/F0_PRESENTATION_CONTRACTS.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 150/150 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - Impeccable detector: 0 temuan.
+  - `git diff --check`: lulus.
+- **Decisions / blockers:**
+  - Alur F2 `ResearchDesk` tidak dihubungkan ke root karena tidak termasuk scope perbaikan ini.
+  - Tidak ada live provider atau Gemini call.
+- **Checklist:** `checklists/F0_PRESENTATION_CONTRACTS.md`
+  - [x] Menyelaraskan report renderer dengan response canonical dan provenance.
+
+## Timestamp: 2026-08-11 11:38:47 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Perketat prompt Gemini setelah live AAPL ditolak karena angka dividen memakai metric ID EPS yang tidak sesuai.
+- **TLDR AI agents done:** Memperjelas aturan semantic grounding agar setiap angka hanya boleh disebut jika didukung nilai canonical metric yang dirujuk, melarang penggunaan `eps_ttm` untuk nilai corporate action, dan melarang corporate-action wording pada tesis atau consideration profil karena bagian tersebut dibangun terpisah oleh backend.
+- **Milestone:** M3 — One-model analysis pipeline
+- **Files changed:**
+  - `lib/ai/prompt.ts`
+  - `tests/unit/ai.test.ts`
+  - `checklists/M3_AGENTS_AND_PROFILES.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 150/150 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live Gemini AAPL inspection: HTTP 200, `STOP`, output profile-only; rejection terkonfirmasi sebagai angka corporate action yang tidak cocok dengan `eps_ttm`.
+- **Decisions / blockers:**
+  - Validator angka tetap ketat; perbaikannya diarahkan ke prompt agar model menghilangkan klaim event dan angka tanpa metric canonical yang cocok.
+  - Raw response, credential, dan secret tidak disimpan.
+- **Checklist:** `checklists/M3_AGENTS_AND_PROFILES.md`
+  - [x] Memperketat semantic grounding prompt dan melarang corporate-action wording pada interpretasi profil.
+
+## Timestamp: 2026-08-11 12:03:18 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Ubah parser harga Business Quant agar GOOGL dan TSLA yang memiliki duplicate EOD dengan OHLC berbeda tetap dapat dianalisis secara aman.
+- **TLDR AI agents done:** Parser kini memilih record duplicate dengan volume terbesar bila pemenangnya unik, menambahkan warning provenance, dan tetap menolak konflik yang tidak dapat didisambiguasi karena volume sama atau kosong.
+- **Milestone:** M2 — Market data and metrics
+- **Files changed:**
+  - `lib/market-data/business-quant-parsers.ts`
+  - `tests/unit/business-quant.test.ts`
+  - `checklists/M2_MARKET_DATA_AND_METRICS.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 150/150 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+  - Controlled live GOOGL: HTTP 200, report tersedia.
+  - Controlled live TSLA: HTTP 200, report tersedia.
+- **Decisions / blockers:**
+  - Record dengan konflik OHLC dipilih berdasarkan volume terbesar hanya jika pemenangnya unik; konflik tanpa pemenang tetap dianggap malformed.
+  - Tidak mencatat credential, raw provider payload, atau secret.
+- **Checklist:** `checklists/M2_MARKET_DATA_AND_METRICS.md`
+  - [x] Menangani duplicate EOD dengan konflik OHLC melalui pemenang volume unik dan warning provenance.

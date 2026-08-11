@@ -346,6 +346,8 @@ describe("M3 Gemini analysis adapter", () => {
     expect(prompt.system).toContain("Return only one JSON object matching the supplied AI interpretation schema");
     expect(prompt.system).toContain("Every thesis and consideration must cite at least one available metric ID");
     expect(prompt.system).toContain("when citing eps_ttm alone, write only EPS, earnings per share, or laba per saham");
+    expect(prompt.system).toContain("Never use eps_ttm to justify a dividend amount");
+    expect(prompt.system).toContain("must not appear in profile thesis or profile considerations");
     expect(prompt.system).toContain("Do not return summary, strengths, risks, uncertainties, limitations, corporateActionClaims, schemaVersion, or disclaimer");
     expect(prompt.user).toContain("OUTPUT_SHAPE_RULES_BEGIN");
   });
