@@ -7,6 +7,8 @@ import { Line, LineChart } from "@/components/charts/line-chart";
 import { PriceScale } from "@/components/charts/price-axis";
 import { ChartTooltip } from "@/components/charts/tooltip";
 import { XAxis } from "@/components/charts/x-axis";
+import type { AnalyzeErrorResponse } from "@/lib/domain";
+import { parseAnalysisApiResult } from "@/lib/presentation/analysis-state";
 
 type TabId = "summary" | "history" | "metrics" | "actions" | "ai" | "evidence";
 type ProfileId = "conservative" | "moderate" | "aggressive";
@@ -26,6 +28,7 @@ type CorporateAction = {
 };
 type Claim = { text: string; metricIds?: string[]; evidenceId?: string };
 type Profile = { rating: string; confidence: number; thesis: Claim; considerations: Claim[] };
+type InstrumentCandidate = NonNullable<AnalyzeErrorResponse["error"]["candidates"]>[number];
 type AppData = {
   requestId?: string;
   instrument: { symbol: string; name: string; exchange: string; currency: string; region: string };
@@ -198,7 +201,7 @@ function SectionTitle({ eyebrow, title, action }: { eyebrow?: string; title: str
   return <div className="section-title">{eyebrow && <span className="eyebrow">{eyebrow}</span>}<div><h2>{title}</h2>{action && <span className="section-action">{action}</span>}</div></div>;
 }
 
-function EmptyWorkspace({ query, setQuery, onSubmit, error }: { query: string; setQuery: (value: string) => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void; error: string }) {
+function EmptyWorkspace({ query, setQuery, onSubmit, error, candidates, onCandidateSelect }: { query: string; setQuery: (value: string) => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void; error: string; candidates: InstrumentCandidate[]; onCandidateSelect: (candidate: InstrumentCandidate) => void }) {
   return <main className="empty-workspace">
     <div className="empty-kicker"><span className="brand-mark"><span /></span><span>RESEARCH SCORE SHEET</span></div>
     <h1>Ubah ticker menjadi<br /><em>lembar riset yang jernih.</em></h1>
@@ -207,6 +210,12 @@ function EmptyWorkspace({ query, setQuery, onSubmit, error }: { query: string; s
       <label htmlFor="ticker">Mulai dengan perusahaan atau ticker</label>
       <div className="search-row"><Icon name="search" size={21} /><input id="ticker" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Contoh: AAPL, BBCA, NVDA" autoComplete="off" /><button className="lime-button" type="submit">Buat analisis <Icon name="arrow" size={17} /></button></div>
       {error && <p className="form-error"><Icon name="alert" size={16} />{error}</p>}
+      {candidates.length > 0 && <div className="candidate-list" role="list" aria-label="Kandidat perusahaan">
+        {candidates.map((candidate) => <button className="candidate-item" key={`${candidate.instrument.symbol}-${candidate.instrument.exchange}`} type="button" onClick={() => onCandidateSelect(candidate)}>
+          <strong>{candidate.instrument.name}</strong>
+          <span>{candidate.instrument.symbol} · {candidate.instrument.exchange} · {candidate.instrument.region}</span>
+        </button>)}
+      </div>}
     </form>
     <div className="empty-principles"><div><span>01</span><strong>Data dulu</strong><small>Setiap kesimpulan punya sumber.</small></div><div><span>02</span><strong>Tiga profil</strong><small>Konservatif, moderat, agresif.</small></div><div><span>03</span><strong>Tanpa sinyal palsu</strong><small>Konteks riset, bukan ajakan transaksi.</small></div></div>
   </main>;
@@ -261,6 +270,7 @@ function LoadingWorkspace({ ticker }: { ticker: string }) {
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const [data, setData] = useState<AppData | null>(null);
+  const [candidates, setCandidates] = useState<InstrumentCandidate[]>([]);
   const [activeTab, setActiveTab] = useState<TabId>("summary");
   const [activeProfile, setActiveProfile] = useState<ProfileId>("moderate");
   const [loading, setLoading] = useState(false);
@@ -278,19 +288,30 @@ export default function HomePage() {
     return typeof factValue === "number" ? formatMetric(factValue, "currency", id, viewData?.instrument.currency) : fallback;
   };
 
-  async function analyze(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const ticker = query.trim();
+  async function submitAnalysis(tickerInput = query) {
+    const ticker = tickerInput.trim();
     if (!ticker) { setError("Masukkan ticker atau kode saham terlebih dahulu."); return; }
-    setLoading(true); setError(""); setData(null); setShowDemo(false); setActiveTab("summary");
+    setLoading(true); setError(""); setCandidates([]); setData(null); setShowDemo(false); setActiveTab("summary");
     try {
       const response = await fetch("/api/analyze", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ query: ticker }) });
-      const payload = await response.json() as AppData | { error?: { message?: string } };
-      if (!response.ok) throw new Error("error" in payload ? payload.error?.message ?? "Analisis belum dapat dijalankan." : "Analisis belum dapat dijalankan.");
-      setData(payload as AppData);
+      const payload: unknown = await response.json().catch(() => null);
+      const result = parseAnalysisApiResult(payload, response.ok);
+      if (result.kind === "success") {
+        setData(result.data);
+      } else if (result.kind === "ambiguous") {
+        setCandidates(result.candidates);
+        setError("Pilih perusahaan yang dimaksud agar analisis tidak tertukar.");
+      } else {
+        setError(result.error.message);
+      }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Koneksi analisis bermasalah. Coba lagi.");
     } finally { setLoading(false); }
+  }
+
+  function analyze(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void submitAnalysis();
   }
 
   function downloadReport() {
@@ -300,7 +321,7 @@ export default function HomePage() {
   }
 
   if (loading) return <><div className="page-frame"><Brand /><LoadingWorkspace ticker={query} /></div></>;
-  if (!viewData || error) return <><div className="page-frame"><Brand /><EmptyWorkspace query={query} setQuery={setQuery} onSubmit={analyze} error={error} /></div></>;
+  if (!viewData || error) return <><div className="page-frame"><Brand /><EmptyWorkspace query={query} setQuery={setQuery} onSubmit={analyze} error={error} candidates={candidates} onCandidateSelect={(candidate) => { setQuery(candidate.instrument.symbol); void submitAnalysis(candidate.instrument.symbol); }} /></div></>;
 
   const instrument = viewData.instrument;
   const qualitySegments = Array.from({ length: 12 }, (_, index) => index < Math.round(viewData.quality.score / 100 * 12));

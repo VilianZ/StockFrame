@@ -142,9 +142,24 @@ describe("Business Quant parser", () => {
     payload.data.push({ ...payload.data[0], volume: 70000000 });
     const parsed = parseBusinessQuantPrices(payload);
     expect(parsed.prices).toHaveLength(2);
+    expect(parsed.prices.map((point) => point.date)).toEqual(["2026-08-04", "2026-08-03"]);
     expect(parsed.prices[0].volume).toBe(70000000);
     expect(parsed.warnings).toHaveLength(1);
     expect(parsed.historical.raw).not.toHaveProperty("data");
+  });
+
+  test("normalizes Business Quant timestamps to supported date-only values", () => {
+    const payload = clone(prices) as unknown as PriceFixture;
+    payload.data[0]!.date = "2026-08-04T16:00:00Z";
+    payload.data[1]!.date = "2026-08-03 16:00:00";
+
+    const parsed = parseBusinessQuantPrices(payload);
+
+    expect(parsed.prices.map((point) => point.date)).toEqual(["2026-08-04", "2026-08-03"]);
+    expect(() => parseBusinessQuantPrices({
+      ...payload,
+      data: [{ ...payload.data[0], date: "2026-08-04 provider-time" }],
+    })).toThrowError(/price date is invalid/);
   });
 
   test("resolves duplicate conflicts by unique larger volume and rejects ambiguous ties", () => {

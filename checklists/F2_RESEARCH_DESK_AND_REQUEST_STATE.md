@@ -12,4 +12,5 @@
 - [x] Success state menyiapkan handoff data analisis ke workspace laporan.
 - [x] Parser request/response dan interaction contract memiliki regression test untuk success, ambiguity, invalid input, malformed response, duplicate submit, cancel, preserved values, dan recovery visibility.
 - [x] Test lokal tidak melakukan live call ke Business Quant atau Gemini.
+- [x] Jalur `HomePage` memakai parser response canonical dan menampilkan kandidat ambiguity tanpa mengaktifkan cancel atau workflow recovery kompleks.
 - [ ] Report renderer dan workspace laporan lengkap dikerjakan pada F3.

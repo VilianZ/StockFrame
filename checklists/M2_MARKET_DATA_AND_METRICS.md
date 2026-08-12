@@ -21,3 +21,4 @@
 - [x] Menangani duplicate EOD dengan memilih record bervolume terbesar untuk konflik OHLC, menambahkan warning provenance, dan menolak konflik tanpa pemenang volume yang unik.
 - [x] Menambahkan Corporate Actions Business Quant sebagai enrichment call keenam dengan parser ticker-safe, canonical kind, bounded notes, deterministic deduplication, dan stable evidence IDs.
 - [x] Menyimpan status `available/empty/unavailable`, membatasi evidence packet ke 20 event terbaru, serta memberi warning split saat adjusted-price belum terverifikasi tanpa mengubah historical prices.
+- [x] Menormalisasi timestamp harga EOD Business Quant (`YYYY-MM-DD HH:mm:ss`/ISO) menjadi tanggal internal `YYYY-MM-DD` dengan validasi format yang ketat.

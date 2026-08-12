@@ -281,7 +281,9 @@ export function hasFourConsecutiveQuarters(statement: FinancialStatementRecord):
 
 function normalizedPriceDate(value: unknown): string {
   if (typeof value !== "string") return malformed("Business Quant price date is missing");
-  const date = value.slice(0, 10);
+  const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})(?:[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/);
+  if (!match) return malformed("Business Quant price date is invalid");
+  const date = match[1];
   if (!validDate(date)) return malformed("Business Quant price date is invalid");
   return date;
 }

@@ -1531,4 +1531,50 @@
   - Record dengan konflik OHLC dipilih berdasarkan volume terbesar hanya jika pemenangnya unik; konflik tanpa pemenang tetap dianggap malformed.
   - Tidak mencatat credential, raw provider payload, atau secret.
 - **Checklist:** `checklists/M2_MARKET_DATA_AND_METRICS.md`
-  - [x] Menangani duplicate EOD dengan konflik OHLC melalui pemenang volume unik dan warning provenance.
+- [x] Menangani duplicate EOD dengan konflik OHLC melalui pemenang volume unik dan warning provenance.
+
+## Timestamp: 2026-08-11 19:16:25 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Sederhanakan alur frontend agar HomePage menjadi satu jalur analisis utama, memvalidasi response API, dan menampilkan kandidat saat pencarian ticker ambigu tanpa menambahkan fitur cancel atau duplicate-submit.
+- **TLDR AI agents done:** HomePage kini menggunakan parser response canonical, memisahkan hasil sukses, ambiguity, dan error typed, serta menyediakan pilihan kandidat perusahaan dengan ticker kanonis. Ditambahkan styling kandidat tanpa mengubah backend, metrics, quality gate, atau Gemini.
+- **Milestone:** F2 — Research desk dan request state
+- **Files changed:**
+  - `app/page.tsx`
+  - `app/globals.css`
+  - `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 150/150 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+- **Decisions / blockers:**
+  - `ResearchDesk` lama tidak diaktifkan sebagai jalur kedua; root HomePage menjadi alur aktif untuk menjaga frontend tetap sederhana.
+  - Tidak ada perubahan backend, provider, metrics, Gemini, atau credential.
+- **Checklist:** `checklists/F2_RESEARCH_DESK_AND_REQUEST_STATE.md`
+- [x] HomePage memakai parser response canonical dan menampilkan kandidat ambiguity tanpa cancel atau recovery kompleks.
+
+## Timestamp: 2026-08-12 07:27:50 WIB
+
+- **Model used:** GPT5.6 Luna High
+- **Human Prompt:** Perbaiki parser harga Business Quant agar menerima timestamp EOD seperti `YYYY-MM-DD HH:mm:ss` dan mengonversinya ke format tanggal internal yang sudah digunakan aplikasi.
+- **TLDR AI agents done:** Parser harga kini hanya menerima tanggal atau timestamp EOD yang valid, mengambil tanggal kalendernya, dan menghasilkan format internal `YYYY-MM-DD`. Regression test ditambahkan untuk timestamp dengan spasi, ISO timestamp, serta suffix yang tidak valid.
+- **Milestone:** M2 — Market data and metrics
+- **Files changed:**
+  - `lib/market-data/business-quant-parsers.ts`
+  - `tests/unit/business-quant.test.ts`
+  - `checklists/M2_MARKET_DATA_AND_METRICS.md`
+  - `devlog/DEVELOPMENT_LOG.md`
+- **Validation:**
+  - `npm run lint`: lulus.
+  - `npm run typecheck`: lulus.
+  - `npm test`: 151/151 lulus.
+  - `npm run build`: lulus; `/` static dan `/api/analyze` dynamic.
+  - `git diff --check`: lulus.
+- **Decisions / blockers:**
+  - Timestamp hanya dinormalisasi jika mengikuti pola tanggal dan waktu yang valid; format provider yang tidak jelas tetap ditolak.
+  - Tidak ada live Gemini call dan tidak mencatat credential atau raw provider payload.
+- **Checklist:** `checklists/M2_MARKET_DATA_AND_METRICS.md`
+  - [x] Menormalisasi timestamp harga EOD Business Quant ke format tanggal internal `YYYY-MM-DD`.
